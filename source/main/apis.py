@@ -100,7 +100,7 @@ def create_water_bill_for_customer(customer,month,year,update=True):
 
         bill.used = used
 
-    bill.price = 10
+    bill.price = 2000
     bill.total = bill.used * bill.price
     bill.is_paid = False if bill.total > 0 else True
     bill.save()

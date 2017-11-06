@@ -32,8 +32,11 @@ def home(request):
     mechanics_devices = customer.mechanics_water_devices.filter(active =True)
     mechanics_device = mechanics_devices[0] if len(mechanics_devices) > 0 else None
 
-    current_used += digital_device.used_at(current_month,current_year) if digital_device else 0
-    current_used += mechanics_device.used_at(current_month,current_year) if mechanics_device else 0
+    digital_used = digital_device.used_at(current_month,current_year) if digital_device else 0
+    mechanics_used = mechanics_device.used_at(current_month,current_year) if mechanics_device else 0
+
+    current_used += digital_used if digital_used is not None else 0
+    current_used += mechanics_used if mechanics_used is not None else 0
 
     return render(request, 'customer/customer_home.html', {
         'water_bills': water_bills,
