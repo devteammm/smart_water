@@ -1,0 +1,41 @@
+{% extends 'main/base.html' %}
+{% block title %}Customer Home{% endblock %}
+{% block content %}
+<div>
+  <h2>Customer</h2>
+  <div>
+    <h3>So tien phai dong</h3>
+  </div>
+  <div>
+    <h3>Lich su</h3>
+    <div>
+      {% for bill in water_bills %}
+        <div>
+          <h4>
+            {{bill.mouth}}/{{bill.year}}
+          </h4>
+          <h5>{% if bill.is_paid %} Paid {% else %} Not Paid{% endif %}</h5>
+          <div>
+            <label>Used: </label>
+            {{bill.used}}
+            Mouth:
+            {{bill.digital_water_device_used.collect.value}}
+            Before:
+            {{bill.digital_water_device_used.collect_before.value}}
+          </div>
+          <div>
+            <label>Price: </label>
+            {{bill.price}}
+          </div>
+          <div>
+            <label>Total: </label>
+            {{bill.total}}
+          </div>
+        </div>
+      {% empty %}
+        Empty
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -8,7 +8,7 @@ class User(AbstractUser):
     is_water_department_staff = models.BooleanField(default=False,blank=True)
 
     def __str__(self):
-        return self.user.username
+        return self.username
     def __unicode__(self):
         return self.__str__()
 
@@ -79,7 +79,7 @@ class WaterDepartment(models.Model):
 
 class WaterDepartmentStaff(models.Model):
     user = models.OneToOneField(User,null=False,related_name='water_department_staff_profile')
-    deparment = models.ForeignKey(WaterDepartment,related_name='staffs')
+    department = models.ForeignKey(WaterDepartment,related_name='staffs')
     name = models.CharField(max_length=255)
     phone = models.CharField(default='',max_length=31)
 

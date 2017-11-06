@@ -73,6 +73,11 @@ class MechanicsWaterDevice(models.Model):
     token = models.CharField(default='',max_length = 255)
     active = models.BooleanField(default=False)
 
+    begin_value = models.IntegerField(default=0)
+
+    begin_mouth = models.IntegerField(choices=MOUTHS,default=1)
+    begin_year = models.IntegerField(default=1)
+
     def __str__(self):
         return '"%s" [mechanics] of user "%s"' %(self.token, self.customer)
     def __unicode__(self):
@@ -181,7 +186,7 @@ class WaterBill(models.Model):
     year = models.IntegerField(default=1)
     mouth = models.IntegerField(default=1,choices=MOUTHS)
 
-    customer = models.ForeignKey(Customer,related_name='water_infors')
+    customer = models.ForeignKey(Customer,related_name='water_bills')
 
     digital_water_device_used = models.ForeignKey(DigitalWaterDeviceUsed,null=True)
     mechanics_water_device_used = models.ForeignKey(MechanicsWaterDeviceUsed,null=True)
@@ -192,7 +197,10 @@ class WaterBill(models.Model):
 
     is_paid = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ('-year','-mouth')
+
     def __str__(self):
-        return '%s - %s, %s, value "%s", price "%s", total: "%s"' % (self.mouth,self.year,self.customer,self.value,self.price,self.total)
+        return '%s - %s, %s, used "%s", price "%s", total: "%s"' % (self.mouth,self.year,self.customer,self.used,self.price,self.total)
     def __unicode__(self):
         return self.__str__()

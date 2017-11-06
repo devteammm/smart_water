@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}Smart Water{% endblock %}</title>
+  </head>
+  <body>
+    <div>
+      {% block header %}
+        {% include 'main/header.html' %}
+      {% endblock %}
+    </div>
+    <div>
+      {% block content %}
+        <h1>Smart Water</h1>
+      {% endblock %}
+    </div>
+    <div>
+      {% block footer %}
+      {% include 'main/footer.html' %}
+      {% endblock %}
+    </div>
+  </body>
+</html>

@@ -1,14 +1,20 @@
 from functools import reduce
 from .models import *
 from sysauth import *
-from .seed_db import seed_db
 
-
-def calculate_water_device_used(mouth,year):
+def calculate_water_device_used(mouth,year,update=False):
     digital_devices = DigitalWaterDevice.objects.filter(active=True)
     mechanics_devices = MechanicsWaterDevice.objects.filter(active=True)
 
     for device in digital_devices:
+        du = None
+        try:
+            du = DigitalWaterDeviceUsed.objects.get(mouth = mouth,year=year,device=device)
+            if not update:
+                continue
+        except DigitalWaterDeviceUsed.DoesNotExist as e:
+            du = DigitalWaterDeviceUsed()
+
         collect = device.last_collect_at(mouth,year)
         collect_before = device.last_collect_before(mouth,year)
 
@@ -17,9 +23,8 @@ def calculate_water_device_used(mouth,year):
             if collect_before is not None:
                 used = collect.value - collect_before.value
             else:
-                used = collect.value - device.begin_value()
+                used = collect.value - device.begin_value
 
-        du = DigitalWaterDeviceUsed()
         du.mouth = mouth
         du.year = year
         du.device = device
@@ -29,6 +34,14 @@ def calculate_water_device_used(mouth,year):
         du.save()
 
     for device in mechanics_devices:
+        du = None
+        try:
+            du = MechanicsWaterDeviceUsed.objects.get(mouth = mouth,year=year,device=device)
+            if not update:
+                continue
+        except MechanicsWaterDeviceUsed.DoesNotExist as e:
+            du = MechanicsWaterDeviceUsed()
+
         collect = device.last_collect_at(mouth,year)
         collect_before = device.last_collect_before(mouth,year)
 
@@ -37,9 +50,8 @@ def calculate_water_device_used(mouth,year):
             if collect_before is not None:
                 used = collect.value - collect_before.value
             else:
-                used = collect.value - device.begin_value()
+                used = collect.value - device.begin_value
 
-        du = MechanicsWaterDeviceUsed()
         du.mouth = mouth
         du.year = year
         du.device = device
@@ -48,20 +60,27 @@ def calculate_water_device_used(mouth,year):
         du.used = used
         du.save()
 
-def creaet_water_bill_for_customer(customer,mouth,year):
-    bill = WaterInfo()
+def create_water_bill_for_customer(customer,mouth,year,update=True):
+    bill = None
+    try:
+        bill = WaterBill.objects.get(customer = customer,mouth=mouth,year=year)
+        if not update:
+            return
+    except WaterBill.DoesNotExist as e:
+        bill = WaterBill()
+
     bill.year=year
-    bill.mouth = bill.mouth
+    bill.mouth = mouth
     bill.customer = customer
 
     try:
-        bill.digital_water_device_used = DigitalWaterDeviceUsed.objects.get(device__active=True,mouth=mouth,year=year)
-    except Model.DoesNotExist as e:
+        bill.digital_water_device_used = DigitalWaterDeviceUsed.objects.get(device__customer=customer, device__active=True,mouth=mouth,year=year)
+    except DigitalWaterDeviceUsed.DoesNotExist as e:
         pass
 
     try:
-        bill.mechanics_water_device_used = MechanicsWaterDeviceUsed.objects.get(device__active=True,mouth=mouth,year=year)
-    except Model.DoesNotExist as e:
+        bill.mechanics_water_device_used = MechanicsWaterDeviceUsed.objects.get(device__customer=customer, device__active=True,mouth=mouth,year=year)
+    except MechanicsWaterDeviceUsed.DoesNotExist as e:
         pass
 
 
@@ -90,7 +109,7 @@ def creaet_water_bill_for_customer(customer,mouth,year):
 def create_water_bill(mouth,year):
     customers = Customer.objects.all()
     for customer in customers:
-        creaet_water_bill_for_customer(customer,mouth,year)
+        create_water_bill_for_customer(customer,mouth,year)
 
 def calculate_at(mouth,year):
     calculate_water_device_used(mouth,year)
