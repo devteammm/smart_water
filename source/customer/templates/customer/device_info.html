@@ -5,6 +5,38 @@
 {% block content %}
 <div class="container">
   <div>
+    <h2>
+      {% if device_type == 'digital' %}
+      Đồng hồ điện tử
+      {% else %}
+      Đồng hồ cơ
+      {% endif %}
+    </h2>
+
+    <div>
+      <label>Mã số: </label>
+      {{device.token}}
+    </div>
+    <div>
+      {% if device.active %}
+        Active!
+      {% else %}
+        Not Active!
+      {% endif %}
+    </div>
+    <div>
+      <label>Chỉ số mới nhất: </label>
+      {{device.last_value}}
+    </div>
+  </div>
+  <hr />
+  {% if device_type == 'mechanics' %}
+    <div>
+      <a href="{% url 'customer:update_mechanics_device_value' device.token %}?next={{request.get_full_path}}" class="btn btn-primary">Cập nhật chỉ số</a>
+    </div>
+    <hr />
+  {% endif %}
+  <div>
     <h3>Lịch sử cập nhật</h3>
     <div>
       {% for info in collects %}
@@ -13,6 +45,9 @@
             <span>{{info.created_at}}</span>
           </div>
           <div class="panel-body">
+            {% if info.image %}
+              <img src="{{info.image.url}}" style="width:100px;height:100px;object-fit:cover" />
+            {% endif %}
             <span>
               {{info.value}}
             </span>

@@ -1,0 +1,97 @@
+{% extends 'customer/customer_base.html' %}
+{% block title %}Update mechanics device value{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h3>Cập nhật chỉ số đồng hồ</h3>
+  <div>
+    <label>Mã số: </label>
+    <a href="{% url 'customer:device_info' 'mechanics' device.token %}">
+      {{device.token}}
+    </a>
+  </div>
+
+  <div>
+    <form enctype="multipart/form-data" method="POST">
+      {% csrf_token %}
+      {% verbatim %}
+      <div id='vue-app'>
+        <label>Chọn ảnh: </label>
+        <input type='file' name='image' @change="changeFile" />
+        <hr />
+        <div>
+          <img :src="imageUrl" style="width:200px;height:200px;object-fit:cover" />
+        </div>
+        <hr />
+        <div>
+          <div v-if="isFetching">
+            Resolving...
+          </div>
+          <div v-if="isFetched && resolveSuccess">
+            Success
+          </div>
+          <div v-if="isFetched && !resolveSuccess">
+            Fail! Please choose file again
+          </div>
+          <input type="text" name="value" v-bind:value="value" hidden />
+          <input type="text" name="value" v-bind:value="value" disabled />
+        </div>
+        <hr />
+        <div>
+          <button type="submit">OK</button>
+        </div>
+      </div>
+      {% endverbatim %}
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block js_1 %}
+<script src="https://unpkg.com/vue"></script>
+<script>
+  new Vue({
+    el : '#vue-app',
+    data: {
+      isFetching: false,
+      isFetched: false,
+      resolveSuccess:false,
+      image: null,
+      imageUrl: null,
+      value: null
+    },
+    methods: {
+      changeFile: function(e){
+        this.image = e.target.files[0]
+        this.imageUrl = URL.createObjectURL(this.image)
+        this.resolve()
+      },
+      resolve: function(){
+        let form = new FormData()
+        form.append('image',this.image)
+        this.isFetching = true
+        fetch('/customer/api_parse_image_device_value',{
+          method: 'POST',
+          body: form
+        }).then((res)=>{
+          if(res.ok){
+            this.isFetched = true
+            this.isFetching = false
+            this.resolveSuccess = true
+            res.json().then((data)=>{
+              this.value = data.value
+            })
+          }else{
+            this.isFetched = true
+            this.isFetching = false
+            this.resolveSuccess = false
+          }
+        }).catch((err) => {
+          this.isFetched = true
+          this.isFetching = false
+          this.resolveSuccess = false
+        })
+      }
+    }
+  })
+</script>
+{% endblock %}

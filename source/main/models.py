@@ -1,7 +1,7 @@
 from django.db import models
 from sysauth.models import Customer
 
-MOUTHS = (
+MONTHS = (
     (1,1),
     (2,2),
     (3,3),
@@ -17,44 +17,44 @@ MOUTHS = (
 )
 
 class WaterDeviceMixin:
-    def last_collect_before(self,mouth,year):
-        if mouth == 1:
+    def last_collect_before(self,month,year):
+        if month == 1:
             year -= 1
-            mouth = 12
+            month = 12
         else:
-            mouth -= 1
-        c = self.last_collect_at(mouth,year)
-        return c if c is not None else self.last_collect_at(mouth,year)
+            month -= 1
+        c = self.last_collect_at(month,year)
+        return c if c is not None else self.last_collect_at(month,year)
 
-    def last_collect_at(self,mouth,year):
-        if year <= self.begin_year and mouth < self.begin_mouth:
+    def last_collect_at(self,month,year):
+        if year <= self.begin_year and month < self.begin_month:
             return None
-        cs = self.collects.filter(mouth=mouth,year=year).order_by('-created_at')
+        cs = self.collects.filter(month=month,year=year).order_by('-created_at')
         return cs[0] if cs.count() > 0 else None
 
 
-    def value_at(self,mouth,year):
-        if year <= self.begin_year and mouth < self.begin_mouth:
+    def value_at(self,month,year):
+        if year <= self.begin_year and month < self.begin_month:
             return self.begin_value
-        lc = self.last_collect(mouth,year)
+        lc = self.last_collect(month,year)
         return lc.value if lc is not None else None
 
     def last_value(self):
         last_collect = self.collects.order_by('-created_at')
         return last_collect[0].value if len(last_collect) > 0 else self.begin_value
 
-    def last_value_before(self,mouth,year):
-        if mouth == 1:
+    def last_value_before(self,month,year):
+        if month == 1:
             year -= 1
-            mouth = 12
+            month = 12
         else:
-            mouth -= 1
-        value = self.value_at(mouth,year)
-        return value if value is not None else self.last_value_before(mouth,year)
+            month -= 1
+        value = self.value_at(month,year)
+        return value if value is not None else self.last_value_before(month,year)
 
-    def used_at(self,mouth,year):
-        value = self.value_at(mouth,year)
-        last_value_before = self.last_value_before(mouth,year)
+    def used_at(self,month,year):
+        value = self.value_at(month,year)
+        last_value_before = self.last_value_before(month,year)
         return value - last_value_before if value is not None and last_value_before is not None else None
 
 
@@ -65,7 +65,7 @@ class DigitalWaterDevice(models.Model,WaterDeviceMixin):
 
     begin_value = models.IntegerField(default=0)
 
-    begin_mouth = models.IntegerField(choices=MOUTHS,default=1)
+    begin_month = models.IntegerField(choices=MONTHS,default=1)
     begin_year = models.IntegerField(default=1)
 
     def __str__(self):
@@ -82,7 +82,7 @@ class MechanicsWaterDevice(models.Model,WaterDeviceMixin):
 
     begin_value = models.IntegerField(default=0)
 
-    begin_mouth = models.IntegerField(choices=MOUTHS,default=1)
+    begin_month = models.IntegerField(choices=MONTHS,default=1)
     begin_year = models.IntegerField(default=1)
 
     def __str__(self):
@@ -94,7 +94,7 @@ class MechanicsWaterDevice(models.Model,WaterDeviceMixin):
 class DigitalWaterDeviceCollect(models.Model):
 
     year = models.IntegerField(default=1)
-    mouth = models.IntegerField(default=1,choices=MOUTHS)
+    month = models.IntegerField(default=1,choices=MONTHS)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -102,7 +102,7 @@ class DigitalWaterDeviceCollect(models.Model):
     value = models.IntegerField(default=0)
 
     def __str__(self):
-        return 'mouth "%s", value "%s",device "%s"'% (self.mouth,self.value,self.device)
+        return 'month "%s", value "%s",device "%s"'% (self.month,self.value,self.device)
     def __unicode__(self):
         return self.__str__()
 
@@ -110,53 +110,54 @@ class DigitalWaterDeviceCollect(models.Model):
 class MechanicsWaterDeviceCollect(models.Model):
 
     year = models.IntegerField(default=1)
-    mouth = models.IntegerField(default=1,choices=MOUTHS)
+    month = models.IntegerField(default=1,choices=MONTHS)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     device = models.ForeignKey(MechanicsWaterDevice,related_name='collects')
+    image = models.ImageField(upload_to='mechanics_water_device_collect_images',null=True)
     value = models.IntegerField(default=0)
 
     def __str__(self):
-        return 'mouth "%s", value "%s",device "%s"'% (self.mouth,self.value,self.device)
+        return 'month "%s", value "%s",device "%s"'% (self.month,self.value,self.device)
     def __unicode__(self):
         return self.__str__()
 
 class DigitalWaterDeviceUsed(models.Model):
     year = models.IntegerField(default=1)
-    mouth = models.IntegerField(default=1,choices=MOUTHS)
+    month = models.IntegerField(default=1,choices=MONTHS)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    device = models.ForeignKey(DigitalWaterDevice,related_name='per_mouths')
+    device = models.ForeignKey(DigitalWaterDevice,related_name='per_months')
     collect = models.ForeignKey(DigitalWaterDeviceCollect,related_name='collect_of',null=True)
     collect_before = models.ForeignKey(DigitalWaterDeviceCollect,related_name='collect_before_of',null=True)
     used = models.IntegerField(default=0)
 
     def __str__(self):
-        return 'mouth "%s", used "%s",device "%s"'% (self.mouth,self.used,self.device)
+        return 'month "%s", used "%s",device "%s"'% (self.month,self.used,self.device)
     def __unicode__(self):
         return self.__str__()
 
 class MechanicsWaterDeviceUsed(models.Model):
     year = models.IntegerField(default=1)
-    mouth = models.IntegerField(default=1,choices=MOUTHS)
+    month = models.IntegerField(default=1,choices=MONTHS)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    device = models.ForeignKey(MechanicsWaterDevice,related_name='per_mouths')
+    device = models.ForeignKey(MechanicsWaterDevice,related_name='per_months')
     collect = models.ForeignKey(MechanicsWaterDeviceCollect,related_name='collect_of',null=True)
     collect_before = models.ForeignKey(MechanicsWaterDeviceCollect,related_name='collect_before_of',null=True)
     used = models.IntegerField(default=0,null=True)
 
     def __str__(self):
-        return 'mouth "%s", used "%s",device "%s"'% (self.mouth,self.used,self.device)
+        return 'month "%s", used "%s",device "%s"'% (self.month,self.used,self.device)
     def __unicode__(self):
         return self.__str__()
 
 class WaterBill(models.Model):
     year = models.IntegerField(default=1)
-    mouth = models.IntegerField(default=1,choices=MOUTHS)
+    month = models.IntegerField(default=1,choices=MONTHS)
 
     customer = models.ForeignKey(Customer,related_name='water_bills')
 
@@ -170,10 +171,10 @@ class WaterBill(models.Model):
     is_paid = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ('-year','-mouth')
+        ordering = ('-year','-month')
 
     def __str__(self):
-        return '%s - %s, %s, used "%s", price "%s", total: "%s"' % (self.mouth,self.year,self.customer,self.used,self.price,self.total)
+        return '%s - %s, %s, used "%s", price "%s", total: "%s"' % (self.month,self.year,self.customer,self.used,self.price,self.total)
     def __unicode__(self):
         return self.__str__()
 

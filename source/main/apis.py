@@ -2,21 +2,21 @@ from functools import reduce
 from .models import *
 from sysauth import *
 
-def calculate_water_device_used(mouth,year,update=False):
+def calculate_water_device_used(month,year,update=False):
     digital_devices = DigitalWaterDevice.objects.filter(active=True)
     mechanics_devices = MechanicsWaterDevice.objects.filter(active=True)
 
     for device in digital_devices:
         du = None
         try:
-            du = DigitalWaterDeviceUsed.objects.get(mouth = mouth,year=year,device=device)
+            du = DigitalWaterDeviceUsed.objects.get(month = month,year=year,device=device)
             if not update:
                 continue
         except DigitalWaterDeviceUsed.DoesNotExist as e:
             du = DigitalWaterDeviceUsed()
 
-        collect = device.last_collect_at(mouth,year)
-        collect_before = device.last_collect_before(mouth,year)
+        collect = device.last_collect_at(month,year)
+        collect_before = device.last_collect_before(month,year)
 
         used = None
         if collect is not None:
@@ -25,7 +25,7 @@ def calculate_water_device_used(mouth,year,update=False):
             else:
                 used = collect.value - device.begin_value
 
-        du.mouth = mouth
+        du.month = month
         du.year = year
         du.device = device
         du.collect = collect
@@ -36,14 +36,14 @@ def calculate_water_device_used(mouth,year,update=False):
     for device in mechanics_devices:
         du = None
         try:
-            du = MechanicsWaterDeviceUsed.objects.get(mouth = mouth,year=year,device=device)
+            du = MechanicsWaterDeviceUsed.objects.get(month = month,year=year,device=device)
             if not update:
                 continue
         except MechanicsWaterDeviceUsed.DoesNotExist as e:
             du = MechanicsWaterDeviceUsed()
 
-        collect = device.last_collect_at(mouth,year)
-        collect_before = device.last_collect_before(mouth,year)
+        collect = device.last_collect_at(month,year)
+        collect_before = device.last_collect_before(month,year)
 
         used = None
         if collect is not None:
@@ -52,7 +52,7 @@ def calculate_water_device_used(mouth,year,update=False):
             else:
                 used = collect.value - device.begin_value
 
-        du.mouth = mouth
+        du.month = month
         du.year = year
         du.device = device
         du.collect = collect
@@ -60,32 +60,32 @@ def calculate_water_device_used(mouth,year,update=False):
         du.used = used
         du.save()
 
-def create_water_bill_for_customer(customer,mouth,year,update=True):
+def create_water_bill_for_customer(customer,month,year,update=True):
     bill = None
     try:
-        bill = WaterBill.objects.get(customer = customer,mouth=mouth,year=year)
+        bill = WaterBill.objects.get(customer = customer,month=month,year=year)
         if not update:
             return
     except WaterBill.DoesNotExist as e:
         bill = WaterBill()
 
     bill.year=year
-    bill.mouth = mouth
+    bill.month = month
     bill.customer = customer
 
     try:
-        bill.digital_water_device_used = DigitalWaterDeviceUsed.objects.get(device__customer=customer, device__active=True,mouth=mouth,year=year)
+        bill.digital_water_device_used = DigitalWaterDeviceUsed.objects.get(device__customer=customer, device__active=True,month=month,year=year)
     except DigitalWaterDeviceUsed.DoesNotExist as e:
         pass
 
     try:
-        bill.mechanics_water_device_used = MechanicsWaterDeviceUsed.objects.get(device__customer=customer, device__active=True,mouth=mouth,year=year)
+        bill.mechanics_water_device_used = MechanicsWaterDeviceUsed.objects.get(device__customer=customer, device__active=True,month=month,year=year)
     except MechanicsWaterDeviceUsed.DoesNotExist as e:
         pass
 
 
     if bill.digital_water_device_used is None and bill.mechanics_water_device_used is None:
-        bills = WaterBill.objects.filter(customer = customer).order_by('-year','-mouth')[:3]
+        bills = WaterBill.objects.filter(customer = customer).order_by('-year','-month')[:3]
         s = reduce(lambda b,s: s + b.used,  bills,0)
         used = s / len(bills) if len(bills) > 0 else 0
         bill.used = used
@@ -106,11 +106,11 @@ def create_water_bill_for_customer(customer,mouth,year,update=True):
     bill.save()
 
 
-def create_water_bill(mouth,year):
+def create_water_bill(month,year):
     customers = Customer.objects.all()
     for customer in customers:
-        create_water_bill_for_customer(customer,mouth,year)
+        create_water_bill_for_customer(customer,month,year)
 
-def calculate_at(mouth,year):
-    calculate_water_device_used(mouth,year)
-    create_water_bill(mouth,year)
+def calculate_at(month,year):
+    calculate_water_device_used(month,year)
+    create_water_bill(month,year)

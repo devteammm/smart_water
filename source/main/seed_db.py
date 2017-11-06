@@ -128,18 +128,18 @@ def seed_device_collect():
     for device in digital_devices:
         begin_value = device.begin_value
         last_value = begin_value
-        for mouth,year in SEED_TIMES:
+        for month,year in SEED_TIMES:
             value = randint(20,200) + last_value
             last_value = value
-            DigitalWaterDeviceCollect.objects.create(year=year,mouth=mouth,device=device,value=value)
+            DigitalWaterDeviceCollect.objects.create(year=year,month=month,device=device,value=value)
 
     for device in mechanics_devices:
         begin_value = device.begin_value
         last_value = begin_value
-        for mouth,year in SEED_TIMES:
+        for month,year in SEED_TIMES:
             value = randint(20,200) + last_value
             last_value = value
-            MechanicsWaterDeviceCollect.objects.create(year=year,mouth=mouth,device=device,value=value)
+            MechanicsWaterDeviceCollect.objects.create(year=year,month=month,device=device,value=value)
 
 def seed_db():
     print('seed_db')
@@ -156,5 +156,5 @@ def seed_db():
 
     print('calculate used and create bill')
     global SEED_TIMES
-    for mouth,year in SEED_TIMES:
-        calculate_at(mouth,year)
+    for month,year in SEED_TIMES:
+        calculate_at(month,year)

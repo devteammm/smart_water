@@ -13,7 +13,9 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url, include
+from django.conf.urls import url, include,static
+from django.conf import settings
+
 from django.contrib import admin
 
 from main import views as main_views
@@ -23,4 +25,4 @@ urlpatterns = [
     url(r'^auth/', include('sysauth.urls')),
     url(r'^customer/', include('customer.urls')),
     url(r'^$',main_views.home),
-]
+]+ static.static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

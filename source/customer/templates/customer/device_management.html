@@ -14,7 +14,9 @@
       {% for d in digital_devices %}
         <div class="panel panel-default">
           <div class="panel-heading">
-            {{d.token}}
+            <a href="{% url 'customer:device_info' 'digital' d.token %}">
+              {{d.token}}
+            </a>
           </div>
           <div class="panel-body">
             <label>Chỉ số mới nhất:</label>
@@ -30,7 +32,9 @@
       {% for d in mechanics_devices %}
         <div class="panel panel-default">
           <div class="panel-heading">
-            {{d.token}}
+            <a href="{% url 'customer:device_info' 'mechanics' d.token %}">
+              {{d.token}}
+            </a>
           </div>
           <div class="panel-body">
             <label>Chỉ số mới nhất:</label>

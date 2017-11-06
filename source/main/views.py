@@ -18,11 +18,11 @@ def home(request):
 
     return render(request,'main/home.html',{})
 
-def canculate(request,mouth=None,year=None):
+def canculate(request,month=None,year=None):
 
-    if mouth is None or year is None:
+    if month is None or year is None:
         return HttpResponse('Mounth and year are not valid!')
 
-    canculate_at(int(mouth),int(year))
+    canculate_at(int(month),int(year))
 
     return HttpResponse('DONE')
