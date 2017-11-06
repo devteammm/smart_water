@@ -24,7 +24,7 @@ HOST: http://128.199.102.46
   * password: 1
 
 ### Customer 4
-  * Use digital water device
+  * Use mechanics water device
   * username: mechanics_customer2
   * password: 1
 
