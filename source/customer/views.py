@@ -19,6 +19,18 @@ def home(request):
         'debt': debt
     })
 
+def device_management(request):
+    if not request.user.is_authenticated() or not request.user.is_customer:
+        return HttpResponse('Chi danh cho Customer')
+
+    digital_devices = request.user.customer_profile.digital_water_devices.all()
+    mechanics_devices = request.user.customer_profile.mechanics_water_devices.all()
+
+    return render(request,'customer/device_management.html',{
+        'digital_devices':digital_devices,
+        'mechanics_devices': mechanics_devices
+    })
+
 def issue_message(request):
     if not request.user.is_authenticated() or not request.user.is_customer:
         return HttpResponse('Chi danh cho Customer')

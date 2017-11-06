@@ -1,0 +1,33 @@
+.header {
+	background: #2196F3;;
+	color: white;;
+
+}
+
+.header .navbar {
+	background: #2196F3;;
+	border: none;
+}
+
+.header .navbar .navbar-header {
+	color: white;
+}
+.header .navbar .navbar-header a {
+	color: white;
+}
+
+.header .navbar ul li a {
+	color: white;
+}
+
+.header .navbar ul li a:hover {
+	background: #1C84D8;
+}
+
+.header .navbar ul li.active a {
+	background: #165f9a;
+}
+
+.header .navbar-text {
+	color: white;
+}

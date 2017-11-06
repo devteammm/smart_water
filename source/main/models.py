@@ -16,7 +16,49 @@ MOUTHS = (
     (12,12)
 )
 
-class DigitalWaterDevice(models.Model):
+class WaterDeviceMixin:
+    def last_collect_before(self,mouth,year):
+        if mouth == 1:
+            year -= 1
+            mouth = 12
+        else:
+            mouth -= 1
+        c = self.last_collect_at(mouth,year)
+        return c if c is not None else self.last_collect_at(mouth,year)
+
+    def last_collect_at(self,mouth,year):
+        if year <= self.begin_year and mouth < self.begin_mouth:
+            return None
+        cs = self.collects.filter(mouth=mouth,year=year).order_by('-created_at')
+        return cs[0] if cs.count() > 0 else None
+
+
+    def value_at(self,mouth,year):
+        if year <= self.begin_year and mouth < self.begin_mouth:
+            return self.begin_value
+        lc = self.last_collect(mouth,year)
+        return lc.value if lc is not None else None
+
+    def last_value(self):
+        last_collect = self.collects.order_by('-created_at')
+        return last_collect[0].value if len(last_collect) > 0 else self.begin_value
+
+    def last_value_before(self,mouth,year):
+        if mouth == 1:
+            year -= 1
+            mouth = 12
+        else:
+            mouth -= 1
+        value = self.value_at(mouth,year)
+        return value if value is not None else self.last_value_before(mouth,year)
+
+    def used_at(self,mouth,year):
+        value = self.value_at(mouth,year)
+        last_value_before = self.last_value_before(mouth,year)
+        return value - last_value_before if value is not None and last_value_before is not None else None
+
+
+class DigitalWaterDevice(models.Model,WaterDeviceMixin):
     customer = models.ForeignKey(Customer,related_name='digital_water_devices')
     token = models.CharField(default='',max_length = 255)
     active = models.BooleanField(default=False)
@@ -31,44 +73,9 @@ class DigitalWaterDevice(models.Model):
     def __unicode__(self):
         return self.__str__()
 
-    def last_collect_before(self,mouth,year):
-        if mouth == 1:
-            year -= 1
-            mouth = 12
-        else:
-            mouth -= 1
-        c = self.last_collect_at(mouth,year)
-        return c if c is not None else self.last_collect_at(mouth,year)
-
-    def last_collect_at(self,mouth,year):
-        if year <= self.begin_year and mouth < self.begin_mouth:
-            return None
-        cs = self.collects.filter(mouth=mouth,year=year).order_by('-created_at')
-        return cs[0] if cs.count() > 0 else None
 
 
-    def value_at(self,mouth,year):
-        if year <= self.begin_year and mouth < self.begin_mouth:
-            return self.begin_value
-        lc = self.last_collect(mouth,year)
-        return lc.value if lc is not None else None
-
-    def last_value_before(self,mouth,year):
-        if mouth == 1:
-            year -= 1
-            mouth = 12
-        else:
-            mouth -= 1
-        value = self.value_at(mouth,year)
-        return value if value is not None else self.last_value_before(mouth,year)
-
-    def used_at(self,mouth,year):
-        value = self.value_at(mouth,year)
-        last_value_before = self.last_value_before(mouth,year)
-        return value - last_value_before if value is not None and last_value_before is not None else None
-
-
-class MechanicsWaterDevice(models.Model):
+class MechanicsWaterDevice(models.Model,WaterDeviceMixin):
     customer = models.ForeignKey(Customer,related_name='mechanics_water_devices')
     token = models.CharField(default='',max_length = 255)
     active = models.BooleanField(default=False)
@@ -83,41 +90,6 @@ class MechanicsWaterDevice(models.Model):
     def __unicode__(self):
         return self.__str__()
 
-    def last_collect_before(self,mouth,year):
-        if mouth == 1:
-            year -= 1
-            mouth = 12
-        else:
-            mouth -= 1
-        c = self.last_collect_at(mouth,year)
-        return c if c is not None else self.last_collect_at(mouth,year)
-
-    def last_collect_at(self,mouth,year):
-        if year <= self.begin_year and mouth < self.begin_mouth:
-            return None
-        cs = self.collects.filter(mouth=mouth,year=year).order_by('-created_at')
-        return cs[0] if cs.count() > 0 else None
-
-
-    def value_at(self,mouth,year):
-        if year <= self.begin_year and mouth < self.begin_mouth:
-            return self.begin_value
-        lc = self.last_collect(mouth,year)
-        return lc.value if lc is not None else None
-
-    def last_value_before(self,mouth,year):
-        if mouth == 1:
-            year -= 1
-            mouth = 12
-        else:
-            mouth -= 1
-        value = self.value_at(mouth,year)
-        return value if value is not None else self.last_value_before(mouth,year)
-
-    def used_at(self,mouth,year):
-        value = self.value_at(mouth,year)
-        last_value_before = self.last_value_before(mouth,year)
-        return value - last_value_before if value is not None and last_value_before is not None else None
 
 class DigitalWaterDeviceCollect(models.Model):
 

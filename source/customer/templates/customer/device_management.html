@@ -1,0 +1,46 @@
+{% extends 'customer/customer_base.html' %}
+{% block title %}
+  Device management
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div>
+    <h3>
+      Danh sách thiết bị
+    </h3>
+    <div>
+      <h4>Đồng hồ điện tử</h4>
+      {% for d in digital_devices %}
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            {{d.token}}
+          </div>
+          <div class="panel-body">
+            <label>Chỉ số mới nhất:</label>
+            {{d.last_value}}
+          </div>
+        </div>
+      {% empty %}
+        Empty
+      {% endfor %}
+    </div>
+    <div>
+      <h4>Đồng hồ số</h4>
+      {% for d in mechanics_devices %}
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            {{d.token}}
+          </div>
+          <div class="panel-body">
+            <label>Chỉ số mới nhất:</label>
+            {{d.last_value}}
+          </div>
+        </div>
+      {% empty %}
+        Empty
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

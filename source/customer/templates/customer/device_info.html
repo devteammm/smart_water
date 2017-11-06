@@ -1,0 +1,28 @@
+{% extends 'customer/customer_base.html' %}
+{% block title %}
+  Water Meter
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div>
+    <h3>Lịch sử cập nhật</h3>
+    <div>
+      {% for info in collects %}
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <span>{{info.created_at}}</span>
+          </div>
+          <div class="panel-body">
+            <span>
+              {{info.value}}
+            </span>
+          </div>
+        </div>
+      {% empty %}
+        Empty
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

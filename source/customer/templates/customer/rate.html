@@ -1,6 +1,7 @@
 {% extends 'customer/customer_base.html' %}
 {% block title %}App Rate{% endblock %}
 {% block content %}
+<div class="container">
   <h3>App Rate</h3>
   <div>
     <h4>My Rate</h4>
@@ -24,14 +25,15 @@
       <h4>Rates</h4>
       <div>
         {% for r in app_rates %}
-          <div>
-            {{r.customer.name}}:
-            {{r.rate}} Sao - {{r.message}}
-          </div>
+        <div>
+          {{r.customer.name}}:
+          {{r.rate}} Sao - {{r.message}}
+        </div>
         {% empty %}
-          Empty
+        Empty
         {% endfor %}
       </div>
     </div>
   </div>
+</div>
 {% endblock %}

@@ -1,7 +1,19 @@
 {% extends 'main/header.html' %}
 
+{% block brand %}
+  SmartWater Customer
+{% endblock %}
 {% block navbar_1 %}
-  <a href="/customer/issue_message">Issue Message</a>
-  <a href="/customer/contact">Contact</a>
-  <a href="/customer/rate">Rate</a>
+  <li>
+    <a href="/customer/device_management">Quản lý thiết bị</a>
+  </li>
+  <li>
+    <a href="/customer/issue_message">Báo cáo sự cố</a>
+  </li>
+  <li>
+    <a href="/customer/contact">Thông tin liên hệ</a>
+  </li>
+  <li>
+    <a href="/customer/rate">Đánh giá hệ thống</a>
+  </li>
 {% endblock %}
