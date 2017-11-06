@@ -1,29 +1,35 @@
-{% extends 'customer/customer_base.html' %}
-{% block title %}
-  Issue Message
-{% endblock %}
-{% block content %}
+{% extends 'customer/customer_base.html' %} {% block title %} Issue Message {% endblock %} {% block content %}
 <div class="container">
   <div>
     <div>
       <form method="POST">
         {% csrf_token %}
-        <input type="text" name='title' placeholder="Title" />
-        <textarea name='content' placeholder="content"></textarea>
+        <div>
+          <input type="text" name='title' placeholder="Title" style="width:300px" />
+        </div>
+        <hr />
+        <div>
+          <textarea name='content' placeholder="content" style="width:100%;max-width:600px;height:200px"></textarea>
+        </div>
         <button type="submit">Send</button>
       </form>
     </div>
     <h3>Messages</h3>
     {% for m in messages %}
-      <div>
-        {{m.title}}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        Title: {{m.title}}
+        -
+        {{m.created_at}}
       </div>
-      <div>
+      <div class="panel-body">
+        <label>
+          {{request.user.username}}: 
+        </label>
         {{m.content}}
       </div>
-    {% empty %}
-      Empty
-    {% endfor %}
+    </div>
+    {% empty %} Empty {% endfor %}
   </div>
 </div>
 {% endblock %}
