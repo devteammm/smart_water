@@ -3,9 +3,13 @@
 {% block title %}Customer Home{% endblock %}
 {% block content %}
 <div class="container">
+  {% if mechanics_device %}
   <div>
-    <button class="btn btn-primary">Cập nhật số nước (đồng hồ cơ)</button>
+    <a href="{% url 'customer:update_mechanics_device_value' mechanics_device.token %}?next={% url 'customer:device_info' 'mechanics' mechanics_device.token %}" class="btn btn-primary">
+      Cập nhật số nước (đồng hồ cơ) "{{mechanics_device.token}}"
+    </a>
   </div>
+  {% endif %}
   <hr />
   <div>
     <h3>Chưa đóng: {{owe_bills.count}} tháng</h3>
@@ -18,17 +22,34 @@
   </div>
   <hr />
   <div>
-    <h3>Tháng này (11/2017)</h3>
+    <h3>Tháng này ({{current_month}}/{{current_year}})</h3>
     <div>
       <div>
-        <label>Đã sử dụng:</label>
+        <label>Đã sử dụng: </label>
+        {{current_used}}
       </div>
       <div>
-        <label>Chỉ số cập nhật mới nhất:</label>
+        <label>Thiết bị: </label>
+        {% if digital_device %}
+        <div>
+          <label>Đồng hồ điện tử: </label>
+          {% with digital_device as device %}
+            {% include 'includes/short_device_info.html' %}
+          {% endwith %}
+        </div>
+        {% endif %}
+        {% if mechanics_device %}
+        <div>
+          <label>Đồng hồ cơ: </label>
+          {% with mechanics_device as device %}
+            {% include 'includes/short_device_info.html' %}
+          {% endwith %}
+        </div>
+        {% endif %}
+
       </div>
       <div>
         <label>Giá:</label>
-
       </div>
     </div>
   </div>

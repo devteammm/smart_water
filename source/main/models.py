@@ -1,5 +1,6 @@
 from django.db import models
 from sysauth.models import Customer
+import datetime
 
 MONTHS = (
     (1,1),
@@ -36,8 +37,22 @@ class WaterDeviceMixin:
     def value_at(self,month,year):
         if year <= self.begin_year and month < self.begin_month:
             return self.begin_value
-        lc = self.last_collect(month,year)
+        lc = self.last_collect_at(month,year)
         return lc.value if lc is not None else None
+
+    def value_at_previous_month(self):
+        now = datetime.datetime.now()
+        previous_month = now.month
+        previous_year = now.year
+
+        if previous_month == 1:
+            previous_month = 12
+            previous_year -= 1
+        else:
+            previous_month -=1
+
+        return self.value_at(previous_month,previous_year)
+
 
     def last_value(self):
         last_collect = self.collects.order_by('-created_at')
@@ -57,6 +72,9 @@ class WaterDeviceMixin:
         last_value_before = self.last_value_before(month,year)
         return value - last_value_before if value is not None and last_value_before is not None else None
 
+    def used_at_current_month(self):
+        now = datetime.datetime.now()
+        return self.used_at(now.month,now.year)
 
 class DigitalWaterDevice(models.Model,WaterDeviceMixin):
     customer = models.ForeignKey(Customer,related_name='digital_water_devices')

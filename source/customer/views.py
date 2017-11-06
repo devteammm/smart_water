@@ -11,15 +11,39 @@ import datetime
 
 
 def home(request):
+    if not request.user.is_authenticated() or not request.user.is_customer:
+        return HttpResponse('Chi danh cho Customer')
 
-    water_bills = request.user.customer_profile.water_bills.all()
-    owe_bills = request.user.customer_profile.water_bills.filter(is_paid=False)
+    customer = request.user.customer_profile
+
+    water_bills = customer.water_bills.all()
+    owe_bills = customer.water_bills.filter(is_paid=False)
     debt = reduce(lambda s, b: s + b.total, list(owe_bills), 0)
+
+    now = datetime.datetime.now()
+    current_month = now.month
+    current_year = now.year
+
+    current_used = 0
+
+    digital_devices = customer.digital_water_devices.filter(active =True)
+    digital_device = digital_devices[0] if len(digital_devices) > 0 else None
+
+    mechanics_devices = customer.mechanics_water_devices.filter(active =True)
+    mechanics_device = mechanics_devices[0] if len(mechanics_devices) > 0 else None
+
+    current_used += digital_device.used_at(current_month,current_year) if digital_device else 0
+    current_used += mechanics_device.used_at(current_month,current_year) if mechanics_device else 0
 
     return render(request, 'customer/customer_home.html', {
         'water_bills': water_bills,
         'owe_bills': owe_bills,
-        'debt': debt
+        'debt': debt,
+        'current_year': current_year,
+        'current_month': current_month,
+        'digital_device': digital_device,
+        'mechanics_device': mechanics_device,
+        'current_used': current_used,
     })
 
 
