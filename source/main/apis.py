@@ -1,96 +1,97 @@
+from functools import reduce
 from .models import *
 from sysauth import *
-# Create your views here.
+from .seed_db import seed_db
 
 
-def create_water_company():
-    WaterCompany.objects.create(name='company 1',address='ha noi', phone='012345678')
+def calculate_water_device_used(mouth,year):
+    digital_devices = DigitalWaterDevice.objects.filter(active=True)
+    mechanics_devices = MechanicsWaterDevice.objects.filter(active=True)
 
-def create_water_company_staff():
-    user = User.objects.create_user(username='water_company_staff1',password='12345678',email='staff@staff.com')
-    user.is_water_company_staff = True
-    user.water_company_staff_profile = WaterCompanyStaff.objects.create(user=user,name='company staff 1',phone='012345678')
-    user.save()
+    for device in digital_devices:
+        collect = device.last_collect_at(mouth,year)
+        collect_before = device.last_collect_before(mouth,year)
 
-    user = User.objects.create_user(username='water_company_staff2',password='12345678',email='staff@staff.com')
-    user.is_water_company_staff = True
-    user.water_company_staff_profile = WaterCompanyStaff.objects.create(user=user,name='company staff 2', phone = '012345678')
-    user.save()
-    return user
+        used = None
+        if collect is not None:
+            if collect_before is not None:
+                used = collect.value - collect_before.value
+            else:
+                used = collect.value - device.begin_value()
 
-def create_water_department():
-    WaterDepartment.objects.create(name='water_department1',address='Ha Noi',phone='0123456789')
-    WaterDepartment.objects.create(name='water_department2',address='Ha Noi',phone='0123456789')
+        du = DigitalWaterDeviceUsed()
+        du.mouth = mouth
+        du.year = year
+        du.device = device
+        du.collect = collect
+        du.collect_before = collect_before
+        du.used = used
+        du.save()
 
-def create_water_department_staff():
-    department1 = WaterDepartment.objects.get(name='water_department1')
-    department2 = WaterDepartment.objects.get(name='water_department2')
+    for device in mechanics_devices:
+        collect = device.last_collect_at(mouth,year)
+        collect_before = device.last_collect_before(mouth,year)
 
-    staff1 = User.objects.create_user(username='water_department1_staff1',password='12345678',email='staff@staff.com')
-    staff1.is_water_department_staff = True
-    staff1.water_department_staff_profile = WaterDepartmentStaff.objects.create(user=user,department = department1,name='department staff 1',phone='012345678')
-    staff1.save()
+        used = None
+        if collect is not None:
+            if collect_before is not None:
+                used = collect.value - collect_before.value
+            else:
+                used = collect.value - device.begin_value()
 
-    staff2 = User.objects.create_user(username='water_department1_staff2',password='12345678',email='staff@staff.com')
-    staff2.is_water_department_staff = True
-    staff1.water_department_staff_profile = WaterDepartmentStaff.objects.create(user=user,department = department1,name='department staff 2',phone='012345678')
-    staff2.save()
+        du = MechanicsWaterDeviceUsed()
+        du.mouth = mouth
+        du.year = year
+        du.device = device
+        du.collect = collect
+        du.collect_before = collect_before
+        du.used = used
+        du.save()
 
-    staff3 = User.objects.create_user(username='water_department2_staff1',password='12345678',email='staff@staff.com')
-    staff3.is_water_department_staff = True
-    staff1.water_department_staff_profile = WaterDepartmentStaff.objects.create(user=user,department = department2,name='department staff 3',phone='012345678')
-    staff3.save()
+def creaet_water_bill_for_customer(customer,mouth,year):
+    bill = WaterInfo()
+    bill.year=year
+    bill.mouth = bill.mouth
+    bill.customer = customer
 
-    staff4 = User.objects.create_user(username='water_department2_staff2',password='12345678',email='staff@staff.com')
-    staff4.is_water_department_staff = True
-    staff1.water_department_staff_profile = WaterDepartmentStaff.objects.create(user=user,department = department2,name='department staff 4',phone='012345678')
-    staff4.save()
+    try:
+        bill.digital_water_device_used = DigitalWaterDeviceUsed.objects.get(device__active=True,mouth=mouth,year=year)
+    except Model.DoesNotExist as e:
+        pass
 
-
-def create_customer():
-
-    department1 = WaterDepartment.objects.get(name='department1')
-    department2 = WaterDepartment.objects.get(name='department2')
-
-    # --------------------------
-
-    user = User.objects.create_user(username='digital_customer1',pasword='12345678',email='customer@customer.com')
-    user.is_customer = True
-    user.customer_profile = Customer.objects.create(water_department=department1, user=user,name='digital customer 1',address='Ha Noi',phone='012345678')
-    user.save()
-    device = DigitalWaterDevice.objects.create(customer = user.customer_profile,token='digital_device1',active=True)
-
-    # --------------------------
-
-    user = User.objects.create_user(username='mechanics_customer2',pasword='12345678',email='customer@customer.com')
-    user.is_customer = True
-    user.customer_profile = Customer.objects.create(water_department=department1, user=user,name='mechanics customer 2',address='Ha Noi',phone='012345678')
-    user.save()
-    device = DigitalWaterDevice.objects.create(customer = user.customer_profile,token='mechanics_device1',active=True)
-
-    # --------------------------
-
-    user = User.objects.create_user(username='digital_customer2',pasword='12345678',email='customer@customer.com')
-    user.is_customer = True
-    user.customer_profile = Customer.objects.create(water_department=department2, user=user,name='digital customer 2',address='Ha Noi',phone='012345678')
-    user.save()
-    device = DigitalWaterDevice.objects.create(customer = user.customer_profile,token='digital device 2',active=True)
-
-    # --------------------------
-
-    user = User.objects.create_user(username='mechanics_customer2',pasword='12345678',email='customer@customer.com')
-    user.is_customer = True
-    user.customer_profile = Customer.objects.create(water_department=department2, user=user,name='mechanics customer 2',address='Ha Noi',phone='012345678')
-    user.save()
-    device = DigitalWaterDevice.objects.create(customer = user.customer_profile,token='mechanics device 2',active=True)
+    try:
+        bill.mechanics_water_device_used = MechanicsWaterDeviceUsed.objects.get(device__active=True,mouth=mouth,year=year)
+    except Model.DoesNotExist as e:
+        pass
 
 
-def seed_db():
+    if bill.digital_water_device_used is None and bill.mechanics_water_device_used is None:
+        bills = WaterBill.objects.filter(customer = customer).order_by('-year','-mouth')[:3]
+        s = reduce(lambda b,s: s + b.used,  bills,0)
+        used = s / len(bills) if len(bills) > 0 else 0
+        bill.used = used
 
-    create_water_company()
-    create_water_company_staff()
+    else:
+        used = 0
+        ddu = bill.digital_water_device_used
+        mdu = bill.mechanics_water_device_used
 
-    create_water_department()
-    create_water_department_staff()
+        used += ddu.used if ddu is not None else 0
+        used += mdu.used if mdu is not None else 0
 
-    create_customer()
+        bill.used = used
+
+    bill.price = 10
+    bill.total = bill.used * bill.price
+    bill.is_paid = False if bill.total > 0 else True
+    bill.save()
+
+
+def create_water_bill(mouth,year):
+    customers = Customer.objects.all()
+    for customer in customers:
+        creaet_water_bill_for_customer(customer,mouth,year)
+
+def calculate_at(mouth,year):
+    calculate_water_device_used(mouth,year)
+    create_water_bill(mouth,year)
