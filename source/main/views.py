@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from . import customer_views,company_staff_views,department_staff_views
+from company_staff import views as company_staff_views
+from customer import views as customer_views
+from department_staff import views as department_staff
 
 from .apis import calculate_at
 

@@ -1,0 +1,29 @@
+{% extends 'customer/customer_base.html' %}
+{% block title %}
+  Issue Message
+{% endblock %}
+{% block content %}
+<div>
+  <div>
+    <div>
+      <form method="POST">
+        {% csrf_token %}
+        <input type="text" name='title' placeholder="Title" />
+        <textarea name='content' placeholder="content"></textarea>
+        <button type="submit">Send</button>
+      </form>
+    </div>
+    <h3>Messages</h3>
+    {% for m in messages %}
+      <div>
+        {{m.title}}
+      </div>
+      <div>
+        {{m.content}}
+      </div>
+    {% empty %}
+      Empty
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -21,5 +21,6 @@ from main import views as main_views
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^auth/', include('sysauth.urls')),
+    url(r'^customer/', include('customer.urls')),
     url(r'^$',main_views.home),
 ]

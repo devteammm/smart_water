@@ -1,0 +1,37 @@
+{% extends 'customer/customer_base.html' %}
+{% block title %}App Rate{% endblock %}
+{% block content %}
+  <h3>App Rate</h3>
+  <div>
+    <h4>My Rate</h4>
+    <form method="POST">
+      {% csrf_token %}
+      <select name="rate">
+        <option value="1" {% if my_rate.rate == 1 %}selected{% endif %} >1 Sao</option>
+        <option value="2" {% if my_rate.rate == 2 %}selected{% endif %} >2 Sao</option>
+        <option value="3" {% if my_rate.rate == 3 %}selected{% endif %}>3 Sao</option>
+        <option value="4" {% if my_rate.rate == 4 %}selected{% endif %}>4 Sao</option>
+        <option value="5" {% if my_rate.rate == 5 %}selected{% endif %}>5 Sao</option>
+      </select>
+      <textarea name="message" placeholder="Message">{{my_rate.message}}</textarea>
+      <button type="submit">Send</button>
+    </form>
+    <div>
+      <h4>AVG</h4>
+      {{avg_rate}} Sao
+    </div>
+    <div>
+      <h4>Rates</h4>
+      <div>
+        {% for r in app_rates %}
+          <div>
+            {{r.customer.name}}:
+            {{r.rate}} Sao - {{r.message}}
+          </div>
+        {% empty %}
+          Empty
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

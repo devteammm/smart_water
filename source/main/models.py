@@ -204,3 +204,38 @@ class WaterBill(models.Model):
         return '%s - %s, %s, used "%s", price "%s", total: "%s"' % (self.mouth,self.year,self.customer,self.used,self.price,self.total)
     def __unicode__(self):
         return self.__str__()
+
+
+class IssueMessage(models.Model):
+    customer = models.ForeignKey(Customer,related_name='issue_messages')
+    title = models.CharField(max_length = 255)
+    content = models.TextField()
+
+    created_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return '"%s", customer "%s", title "%s"' %(self.created_at,self.customer,self.title)
+    def __unicode__(self):
+        return self.__str__()
+
+class AppRate(models.Model):
+    RATES = (
+        (1,1),
+        (2,2),
+        (3,3),
+        (4,4),
+        (5,5),
+    )
+    customer = models.OneToOneField(Customer,related_name='app_rate')
+    rate = models.IntegerField(choices=RATES,default=5)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('-updated_at',)
+
+    def __str__(self):
+        return '"%s" sao, "%s"' %( self.rate,self.message)
+    def __unicode__(self):
+        return self.__str__()
