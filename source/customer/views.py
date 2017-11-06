@@ -1,11 +1,11 @@
-from django.shortcuts import render,redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from functools import reduce
 import json
 from main.models import IssueMessage, AppRate
 from django.db.models import Avg
-from main.models import DigitalWaterDevice, MechanicsWaterDevice, MechanicsWaterDeviceCollect
+from main.models import DigitalWaterDevice, MechanicsWaterDevice, DigitalWaterDeviceCollect, MechanicsWaterDeviceCollect
 from random import randint
 import datetime
 
@@ -63,7 +63,7 @@ def device_info(request, device_type=None, device_token=None):
 
 def update_mechanics_device_value(request, device_token):
 
-    next = request.GET.get('next',request.get_full_path())
+    next = request.GET.get('next', request.get_full_path())
 
     if not request.user.is_authenticated() or not request.user.is_customer:
         return HttpResponse('Chi danh cho Customer')
@@ -82,7 +82,7 @@ def update_mechanics_device_value(request, device_token):
             month = now.month
             year = now.year
             MechanicsWaterDeviceCollect.objects.create(
-                month=month, year=year, device=device,image=image, value=value)
+                month=month, year=year, device=device, image=image, value=value)
             return redirect(next)
         else:
             return render(request, 'customer/update_mechanics_device_value.html', {
@@ -91,6 +91,24 @@ def update_mechanics_device_value(request, device_token):
     return render(request, 'customer/update_mechanics_device_value.html', {
         'device': device
     })
+
+
+@csrf_exempt
+def api_update_digital_device_value(request, device_token, value):
+
+    device = get_object_or_404(
+        DigitalWaterDevice, token=device_token)
+
+    if value is not None:
+        now = datetime.datetime.now()
+        month = now.month
+        year = now.year
+        DigitalWaterDeviceCollect.objects.create(
+            month=month, year=year, device=device, value=value)
+        return HttpResponse({'status': 'ok'}, status=201)
+    else:
+        return HttpResponse({'error': 'Need value!'}, status=404)
+
 
 @csrf_exempt
 def api_parse_image_device_value(request):
