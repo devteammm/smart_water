@@ -18,6 +18,9 @@ def clear_db():
     DigitalWaterDeviceUsed.objects.all().delete()
     MechanicsWaterDeviceUsed.objects.all().delete()
 
+    WaterPriceConfig.objects.all().delete()
+    WaterPrice.objects.all().delete()
+
     WaterBill.objects.all().delete()
 
 def create_water_company():
@@ -141,6 +144,35 @@ def seed_device_collect():
             last_value = value
             MechanicsWaterDeviceCollect.objects.create(year=year,month=month,device=device,value=value)
 
+def seed_water_price_config():
+
+    print('seed_water_price_config')
+
+    for month, year in SEED_TIMES:
+        default_price = randint(1000,4000)
+        config = WaterPriceConfig.objects.create(month = month,year=year,default_price=default_price)
+
+        max_value = randint(20,40)
+        price = randint(1000,4000)
+        WaterPrice.objects.create(config=config,min_value=WaterPrice.NOT_SET,max_value=max_value,price=price)
+        last_value = max_value
+        last_price = price
+
+        loop = randint(1,4)
+        for i in range(loop):
+            min_value = last_value +1
+            max_value = randint(min_value+10, min_value + 20)
+            price = randint(last_price + 500, last_price + 1000)
+
+            WaterPrice.objects.create(config=config,min_value=min_value,max_value=max_value,price=price)
+
+            last_value = max_value
+            last_price = price
+
+        min_value = last_value +1
+        price =  randint(last_price +500,last_price+ 1000)
+        WaterPrice.objects.create(config=config,min_value=min_value,max_value=WaterPrice.NOT_SET,price=price)
+
 def seed_db():
     print('seed_db')
     create_water_company()
@@ -153,6 +185,7 @@ def seed_db():
 
     seed_device_collect()
 
+    seed_water_price_config()
 
     print('calculate used and create bill')
     global SEED_TIMES

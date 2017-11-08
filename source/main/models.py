@@ -173,6 +173,73 @@ class MechanicsWaterDeviceUsed(models.Model):
     def __unicode__(self):
         return self.__str__()
 
+
+class WaterPriceConfig(models.Model):
+    NOT_SET = -1
+    month = models.IntegerField(default=1,choices=MONTHS)
+    year = models.IntegerField(default=1)
+
+    default_price = models.IntegerField(default=0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return ' %s/%s : %s, and %s other'%(self.month,self.year,self.default_price,self.prices.count())
+    def __unicode__(self):
+        return self.__str__()
+
+    def total(self,used):
+        s = 0
+
+        for p in self.prices.all():
+            if p.is_lt:
+                if used <= p.max_value:
+                    s += used * p.price
+                elif used > p.max_value:
+                    s += p.max_value * p.price
+            elif p.is_range:
+                if used >= p.min_value and used <= p.max_value:
+                    s += (used - p.min_value +1) * p.price
+                elif used > p.max_value:
+                    s += (p.max_value - p.min_value +1) * p.price
+            elif p.is_gt:
+                if used >= p.max_value:
+                    s += (used - p.max_value +1) * p.price
+            else:
+                pass
+
+        return s
+
+class WaterPrice(models.Model):
+
+    NOT_SET = -1
+
+    config = models.ForeignKey(WaterPriceConfig,related_name='prices')
+    min_value = models.IntegerField(default=NOT_SET)
+    max_value = models.IntegerField(default=NOT_SET)
+    price = models.IntegerField(default=0)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return '"%s" - "%s" : "%s" VND' %(self.min_value,self.max_value)
+    def __unicode__(self):
+        return self.__str__()
+
+    @property
+    def is_lt(self):
+        return self.min_value == self.NOT_SET and self.max_value != self.NOT_SET
+
+    @property
+    def is_range(self):
+        return self.min_value != self.NOT_SET and self.max_value != self.NOT_SET
+
+    @property
+    def is_gt(self):
+        return self.min_value != self.NOT_SET and self.max_value == self.NOT_SET
+
 class WaterBill(models.Model):
     year = models.IntegerField(default=1)
     month = models.IntegerField(default=1,choices=MONTHS)
@@ -183,7 +250,7 @@ class WaterBill(models.Model):
     mechanics_water_device_used = models.ForeignKey(MechanicsWaterDeviceUsed,null=True)
 
     used = models.IntegerField(default=0)
-    price = models.IntegerField(default=0)
+    price_config = models.ForeignKey(WaterPriceConfig,related_name='water_bills')
     total = models.IntegerField(default=0)
 
     is_paid = models.BooleanField(default=False)

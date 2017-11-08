@@ -61,6 +61,9 @@ def calculate_water_device_used(month,year,update=False):
         du.save()
 
 def create_water_bill_for_customer(customer,month,year,update=True):
+
+    price_config = WaterPriceConfig.objects.get(month=month,year=year)
+
     bill = None
     try:
         bill = WaterBill.objects.get(customer = customer,month=month,year=year)
@@ -100,8 +103,8 @@ def create_water_bill_for_customer(customer,month,year,update=True):
 
         bill.used = used
 
-    bill.price = 2000
-    bill.total = bill.used * bill.price
+    bill.price_config = price_config
+    bill.total = price_config.total(bill.used)
     bill.is_paid = False if bill.total > 0 else True
     bill.save()
 
