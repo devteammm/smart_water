@@ -1,0 +1,21 @@
+{% extends 'customer/customer_base.html' %}
+{% block title %} Thông tin giá{% endblock %}
+{% block active_nav %}#price_info_nav{% endblock %}
+{% block content %}
+<div class="container">
+  <h3>Thông tin giá</h3>
+  <hr />
+  <div>
+    {% for price_config in price_configs %}
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4>Tháng {{price_config.month}} / {{price_config.year}}</h4>
+        </div>
+        <div class="panel-body">
+          {% include 'includes/short_water_price_config.html' %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

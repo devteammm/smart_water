@@ -148,7 +148,17 @@ def seed_water_price_config():
 
     print('seed_water_price_config')
 
-    for month, year in SEED_TIMES:
+    CONFIG_SEED_TIMES = (
+        (5,2017),
+        (6,2017),
+        (7,2017),
+        (8,2017),
+        (9,2017),
+        (10,2017),
+        (11,2017),
+    )
+
+    for month, year in CONFIG_SEED_TIMES:
         default_price = randint(1000,4000)
         config = WaterPriceConfig.objects.create(month = month,year=year,default_price=default_price)
 

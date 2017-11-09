@@ -27,6 +27,10 @@
 .header .navbar ul li.active a {
 	background: #165f9a;
 }
+.header .navbar ul li.active a:hover {
+	background: #1C84D8;
+
+}
 
 .header .navbar-text {
 	color: white;

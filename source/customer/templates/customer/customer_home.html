@@ -1,131 +1,128 @@
-{% extends 'customer/customer_base.html' %}
-{% load humanize %}
-{% block title %}Customer Home{% endblock %}
-{% block content %}
+{% extends 'customer/customer_base.html' %} {% load humanize %} {% block title %}Customer Home{% endblock %} {% block active_nav %}#home_nav{% endblock%} {% block content %}
+<!-- <div style="text-align:center;background-color:#73c1ff;padding:10px;">
+  <h2>Hệ thống quản lý nước thông minh SmartWater</h2>
+  <h3>Giải pháp cho mọi nhà</h3>
+</div> -->
 <div class="container">
   {% if mechanics_device %}
   <div>
     <a href="{% url 'customer:update_mechanics_device_value' mechanics_device.token %}?next={% url 'customer:device_info' 'mechanics' mechanics_device.token %}" class="btn btn-primary">
-      Cập nhật số nước (đồng hồ cơ) "{{mechanics_device.token}}"
+      Cập nhật chỉ số đồng hồ cơ
     </a>
   </div>
-  {% endif %}
-  <hr />
-  <div>
-    <h3>Chưa đóng: {{owe_bills.count}} tháng</h3>
-    <h3>
-      Tổng số tiền phải đóng:
-      <span>
-        {{debt|intcomma}} đ
-      </span>
-    </h3>
+  <hr /> {% endif %}
+  <div class="panel panel-default">
+    <div class="panel-body">
+      <h3>
+        - Chưa đóng:
+        <span style="color:red;">
+          {{owe_bills.count}} tháng
+        </span>
+      </h3>
+      <h3>
+        - Tổng số tiền phải đóng:
+        <span style="color:red;">
+          {{debt|intcomma}} đ
+        </span>
+      </h3>
+      <div class="alert alert-danger">* NOTE: Chúng tôi sẽ tạm dừng cung cấp nước nếu số tiền nợ vượt quá 7,000,000 đ</div>
+    </div>
   </div>
   <hr />
   <div>
     <h3>Tháng này ({{current_month}}/{{current_year}})</h3>
-    <div>
-      <div>
-        <label>Đã sử dụng: </label>
-        {{current_used}}
-      </div>
-      <div>
-        <label>Thiết bị: </label>
-        {% if digital_device %}
-        <div>
-          <label>Đồng hồ điện tử: </label>
-          {% with digital_device as device %}
-            {% include 'includes/short_device_info.html' %}
-          {% endwith %}
-        </div>
-        {% endif %}
-        {% if mechanics_device %}
-        <div>
-          <label>Đồng hồ cơ: </label>
-          {% with mechanics_device as device %}
-            {% include 'includes/short_device_info.html' %}
-          {% endwith %}
-        </div>
-        {% endif %}
-
-      </div>
-      <div>
-        <label>Giá:</label>
-      </div>
-    </div>
+    <table class="table">
+      <tr>
+        <th>Đã sử dụng: </th>
+        <td>
+          {{current_used}} số
+        </td>
+      </tr>
+      <tr>
+        <th>Thiết bị: </th>
+        <td>
+          {% if digital_device %}
+            {% with digital_device as device %}
+              {% include 'includes/water_device/digital_device.html' %}
+            {% endwith %}
+          {% endif %}
+          {% if mechanics_device %}
+            {% with mechanics_device as device %}
+              {% include 'includes/water_device/mechanics_device.html'%}
+            {% endwith %}
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+  </div>
+  <hr />
+  <div>
+    <h3>Giá tháng này({{current_month}}/{{current_year}})</h3>
+    {% with current_water_price_config as price_config %} {% include 'includes/short_water_price_config.html' %} {% endwith %}
   </div>
   <hr />
   <div>
     <h3>Lịch sử </h3>
     <div>
       {% for bill in water_bills %}
-        <div class="bill-card panel {% if bill.is_paid %}panel-success{% else %}panel-danger{% endif%}">
-          <div class="panel-heading">
-            <h4>
+      <div class="bill-card panel {% if bill.is_paid %}panel-success{% else %}panel-danger{% endif%}">
+        <div class="panel-heading">
+          <h4>
               <b>
-                {{bill.month}}/{{bill.year}}
+                Tháng {{bill.month}}/{{bill.year}}
               </b> -
               <span>{{bill.total|intcomma}} đ</span> -
               <span>
                 {% if bill.is_paid %} Đã thanh toán {% else %}Chưa thanh toán{% endif %}
               </span>
             </h4>
+        </div>
+        <div class="panel-body">
+          <div>
+            <label>Đã sử dụng: </label> {{bill.used}} số
           </div>
-          <div class="panel-body">
-            <div>
-              <label>Đã sử dụng: </label>
-              {{bill.used}} số
-            </div>
-            {% if bill.digital_water_device_used %}
-            <div>
-              <b>
+          {% if bill.digital_water_device_used %}
+          <div>
+            <b>
                 Đồng hồ điện tử
               </b>
-              <div>
-                <b>
-                  Chỉ số tháng này:
-                </b>
-                {{bill.digital_water_device_used.collect.value}}
-              </div>
-              <div>
-                <b>
-                  Chỉ số tháng trước:
-                </b>
-                {{bill.digital_water_device_used.collect_before.value}}
-              </div>
-            </div>
-            {% endif %}
-            {% if bill.mechanics_water_device_used %}
             <div>
-              <b>Đồng hồ số</b>
-              <div>
-                <b>
+              <b>
                   Chỉ số tháng này:
-                </b>
-                {{bill.mechanics_water_device_used.collect.value}}
-              </div>
-              <div>
-                <b>
-                  Chỉ số tháng trước:
-                </b>
-                {{bill.mechanics_water_device_used.collect_before.value}}
-              </div>
+                </b> {{bill.digital_water_device_used.collect.value}}
             </div>
-            {% endif %}
             <div>
-              <label>Giá: </label>
-              {{bill.price|intcomma}} đ / số
+              <b>
+                  Chỉ số tháng trước:
+                </b> {{bill.digital_water_device_used.collect_before.value}}
             </div>
           </div>
-          <div class="panel-footer">
+          {% endif %} {% if bill.mechanics_water_device_used %}
+          <div>
+            <b>Đồng hồ số</b>
             <div>
-              <label>Thành tiền: </label>
-              {{bill.total|intcomma}} đ
+              <b>
+                  Chỉ số tháng này:
+                </b> {{bill.mechanics_water_device_used.collect.value}}
             </div>
+            <div>
+              <b>
+                  Chỉ số tháng trước:
+                </b> {{bill.mechanics_water_device_used.collect_before.value}}
+            </div>
+          </div>
+          {% endif %}
+          <div>
+            <label>Giá: </label> {% with bill as water_bill %} {% include 'includes/total_price_table.html' %} {% endwith %}
           </div>
         </div>
-      {% empty %}
-        Empty
-      {% endfor %}
+        <div class="panel-footer">
+          <div>
+            <label>Thành tiền: </label> {{bill.total|intcomma}} đ
+          </div>
+        </div>
+      </div>
+      {% empty %} Empty {% endfor %}
     </div>
   </div>
 </div>

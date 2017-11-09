@@ -184,6 +184,9 @@ class WaterPriceConfig(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ('-month','-year')
+
     def __str__(self):
         return ' %s/%s : %s, and %s other'%(self.month,self.year,self.default_price,self.prices.count())
     def __unicode__(self):
@@ -211,6 +214,32 @@ class WaterPriceConfig(models.Model):
 
         return s
 
+    def used_prices(self,used):
+
+        result = []
+
+        for p in self.prices.all():
+            if p.is_lt:
+                if used <= p.max_value:
+                    result.append( (p,used, used * p.price))
+                elif used > p.max_value:
+                    result.append((p,p.max_value,p.max_value * p.price))
+            elif p.is_range:
+                if used >= p.min_value and used <= p.max_value:
+                    u = used - p.min_value +1
+                    result.append((p,u,u * p.price))
+                elif used > p.max_value:
+                    u = p.max_value - p.min_value +1
+                    result.append((p,u,u * p.price))
+            elif p.is_gt:
+                if used >= p.max_value:
+                    u = used - p.max_value +1
+                    result.append((p,u,u * p.price))
+            else:
+                pass
+
+        return result
+
 class WaterPrice(models.Model):
 
     NOT_SET = -1
@@ -222,6 +251,9 @@ class WaterPrice(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('min_value','max_value')
 
     def __str__(self):
         return '"%s" - "%s" : "%s" VND' %(self.min_value,self.max_value)
@@ -263,6 +295,8 @@ class WaterBill(models.Model):
     def __unicode__(self):
         return self.__str__()
 
+    def used_prices(self):
+        return self.price_config.used_prices(self.used)
 
 class IssueMessage(models.Model):
     customer = models.ForeignKey(Customer,related_name='issue_messages')

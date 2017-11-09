@@ -1,9 +1,14 @@
 {% extends 'customer/customer_base.html' %}
 {% block title %}Update mechanics device value{% endblock %}
-
+{% block active_nav %}#update_mechanics_device_value_nav{% endblock%}
 {% block content %}
 <div class="container">
   <h3>Cập nhật chỉ số đồng hồ</h3>
+  <div>
+    {% with device as mechanics_device %}
+      {% include 'includes/water_device/digital_device.html' %}
+    {% endwith %}
+  </div>
   <div>
     <label>Mã số: </label>
     <a href="{% url 'customer:device_info' 'mechanics' device.token %}">
@@ -25,20 +30,35 @@
         <hr />
         <div>
           <div v-if="isFetching">
-            Resolving...
+            <span class="fa fa-spinner fa-spin fa-5x"></span>
           </div>
           <div v-if="isFetched && resolveSuccess">
             Success
           </div>
           <div v-if="isFetched && !resolveSuccess">
-            Fail! Please choose file again
+            <div class="alert alert-danger">
+              <div>
+                Fail! Please choose file again
+              </div>
+              <a href="#error_box" data-toggle="collapse">
+                Cause...(click)
+              </a>
+              <div id="error_box" class="collapse">
+                <div>
+                  Fetch value: {{valueError}}
+                </div>
+                <div>
+                  Error: {{error}}
+                </div>
+              </div>
+            </div>
           </div>
           <input type="text" name="value" v-bind:value="value" hidden />
           <input type="text" name="value" v-bind:value="value" disabled />
         </div>
         <hr />
         <div>
-          <button type="submit">OK</button>
+          <button class="btn btn-primary" type="submit" :disabled="isFetching || !isFetched || !resolveSuccess">Gửi kết quả</button>
         </div>
       </div>
       {% endverbatim %}
@@ -57,7 +77,9 @@
       resolveSuccess:false,
       image: null,
       imageUrl: null,
-      value: null
+      value: null,
+      error: null,
+      valueError: null
     },
     methods: {
       changeFile: function(e){
@@ -69,6 +91,9 @@
         let form = new FormData()
         form.append('image',this.image)
         this.isFetching = true
+        this.isFetched = false
+        this.resolveSuccess = false
+        this.value=null
         fetch('/customer/api_parse_image_device_value',{
           method: 'POST',
           body: form
@@ -84,11 +109,17 @@
             this.isFetched = true
             this.isFetching = false
             this.resolveSuccess = false
+            this.value= null
+            res.json().then((data)=>{
+              this.valueError = data.value
+              this.error = data.error
+            })
           }
         }).catch((err) => {
           this.isFetched = true
           this.isFetching = false
           this.resolveSuccess = false
+          this.value = null
         })
       }
     }

@@ -1,0 +1,49 @@
+<div class="btn btn-default" data-target="#water_device_{{device.token}}" data-toggle="collapse"
+ title="Water meter">
+  <b>
+    {% block device_type %}Đồng hồ điện tử  {% endblock %}
+  </b>
+  ({{device.token}})
+</div>
+<div id='water_device_{{device.token}}' class="collapse panel panel-default">
+  <table class="table">
+
+    <tr>
+      <th>
+        Mã số
+      </th>
+      <td>
+        {{device.token}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        Sử dụng tháng này
+      </th>
+      <td>
+        {% if device.used_at_current_month %}
+          {{device.used_at_current_month}}
+        {% else %}
+          Chưa cập nhật
+        {% endif %}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        Chỉ số mới nhất
+      </th>
+      <td>
+        {{device.last_value}}
+      </td>
+    </tr>
+    <tr>
+      <th>
+        Chỉ số tháng trước
+      </th>
+      <td>
+        {{device.value_at_previous_month}}
+      </td>
+    </tr>
+  </table>
+
+</div>

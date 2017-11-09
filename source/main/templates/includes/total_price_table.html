@@ -1,0 +1,67 @@
+{% load humanize %}
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>
+        Định mức
+      </th>
+      <th>
+        Giá
+      </th>
+      <th>
+
+      </th>
+      <th>
+        Đã sử dụng
+      </th>
+      <th>
+        Thành tiền
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p, used, money in water_bill.used_prices %}
+      <tr>
+        <td>
+          <label>
+            {% if p.is_lt %}
+            Từ 1 tới {{p.max_value}}
+            {% elif p.is_range %}
+            Từ {{p.min_value}} tới {{p.max_value}}
+            {% else %}
+              Từ {{p.min_value}} trở đi
+            {% endif %}
+          </label>
+        </td>
+        <td>
+          {{p.price|intcomma}} đ / số
+        </td>
+        <td>
+          X
+        </td>
+        <td>
+          {{used}} số
+        </td>
+        <td>
+          {{money|intcomma}}  đ
+        </td>
+      </tr>
+    {% endfor %}
+
+    <tr>
+      <td>
+        <b>Tổng</b>
+      </td>
+      <td>
+      </td>
+      <td>
+      </td>
+      <td>
+        <b>{{water_bill.used}}</b>
+      </td>
+      <td>
+        <b>{{water_bill.total|intcomma}} đ</b>
+      </td>
+    </tr>
+  </tbody>
+</table>

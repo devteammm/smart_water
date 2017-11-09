@@ -1,0 +1,31 @@
+{% load humanize %}
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>
+        Định mức
+      </th>
+      <th>
+        Giá
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in price_config.prices.all %}
+    <tr>
+      <td>
+        {% if p.is_lt %}
+        Từ 1 tới {{p.max_value}}
+        {% elif p.is_range %}
+        Từ {{p.min_value}} tới {{p.max_value}}
+        {% else %}
+          Từ {{p.min_value}} trở đi
+        {% endif %}
+      </td>
+      <td>
+        {{p.price|intcomma}} đ / số
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

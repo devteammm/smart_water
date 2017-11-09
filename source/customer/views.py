@@ -5,10 +5,12 @@ from functools import reduce
 import json
 from main.models import IssueMessage, AppRate
 from django.db.models import Avg
-from main.models import DigitalWaterDevice, MechanicsWaterDevice, DigitalWaterDeviceCollect, MechanicsWaterDeviceCollect
+from main.models import WaterPriceConfig, DigitalWaterDevice, MechanicsWaterDevice, DigitalWaterDeviceCollect, MechanicsWaterDeviceCollect
 from random import randint
 import datetime
 
+from PIL import Image
+import pytesseract
 
 def home(request):
     if not request.user.is_authenticated() or not request.user.is_customer:
@@ -38,6 +40,8 @@ def home(request):
     current_used += digital_used if digital_used is not None else 0
     current_used += mechanics_used if mechanics_used is not None else 0
 
+    current_water_price_config = WaterPriceConfig.objects.get( month=current_month,year=current_year)
+
     return render(request, 'customer/customer_home.html', {
         'water_bills': water_bills,
         'owe_bills': owe_bills,
@@ -47,6 +51,7 @@ def home(request):
         'digital_device': digital_device,
         'mechanics_device': mechanics_device,
         'current_used': current_used,
+        'current_water_price_config': current_water_price_config
     })
 
 
@@ -141,12 +146,32 @@ def api_update_digital_device_value(request, device_token, value):
 def api_parse_image_device_value(request):
 
     image = request.FILES.get('image')
-    value = randint(20, 200)
-    res = {
+    # value = randint(20, 200)
+    value = None
+    try:
+        value = pytesseract.image_to_string(Image.open(image))
+        value = int(value)
+        res = {
         'value': value
-    }
-    return HttpResponse(json.dumps(res), content_type='application/json')
+        }
+        return HttpResponse(json.dumps(res), content_type='application/json')
 
+    except Exception as e:
+        res = {
+        'value': value,
+        'error': str(e)
+        }
+        return HttpResponse(json.dumps(res), content_type='application/json',status=404)
+
+
+
+def price_info(request):
+
+    price_configs = WaterPriceConfig.objects.all()
+
+    return render(request,'customer/price_info.html',{
+        'price_configs': price_configs
+    })
 
 def issue_message(request):
     if not request.user.is_authenticated() or not request.user.is_customer:

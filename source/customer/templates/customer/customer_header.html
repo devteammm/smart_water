@@ -4,16 +4,19 @@
   SmartWater Customer
 {% endblock %}
 {% block navbar_1 %}
-  <li>
+  <li id='device_management_nav'>
     <a href="/customer/device_management">Quản lý thiết bị</a>
   </li>
-  <li>
+  <li id='price_info_nav' >
+    <a href="/customer/price_info">Thông tin giá</a>
+  </li>
+  <li id='issue_message_nav'>
     <a href="/customer/issue_message">Báo cáo sự cố</a>
   </li>
-  <li>
+  <li id='contact_nav' >
     <a href="/customer/contact">Thông tin liên hệ</a>
   </li>
-  <li>
+  <li id='rate_nav'>
     <a href="/customer/rate">Đánh giá hệ thống</a>
   </li>
 {% endblock %}

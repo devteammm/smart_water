@@ -1,4 +1,7 @@
-{% extends 'customer/customer_base.html' %} {% block title %} Issue Message {% endblock %} {% block content %}
+{% extends 'customer/customer_base.html' %}
+{% block title %} Issue Message {% endblock %}
+{% block active_nav %}#issue_message_nav{% endblock %}
+{% block content %}
 <div class="container">
   <div>
     <div>
@@ -24,7 +27,7 @@
       </div>
       <div class="panel-body">
         <label>
-          {{request.user.username}}: 
+          {{request.user.username}}:
         </label>
         {{m.content}}
       </div>
