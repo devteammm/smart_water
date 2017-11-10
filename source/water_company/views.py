@@ -4,4 +4,4 @@ from django.shortcuts import render
 from django.shortcuts import render
 
 def home(request):
-    return render(request,'company_staff/company_staff_home.html',{})
+    return render(request,'water_company/water_company_home.html',{})

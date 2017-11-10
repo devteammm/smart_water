@@ -12,6 +12,9 @@ import datetime
 from PIL import Image
 import pytesseract
 
+from main.apis import get_or_create_time
+
+
 def home(request):
     if not request.user.is_authenticated() or not request.user.is_customer:
         return HttpResponse('Chi danh cho Customer')
@@ -28,19 +31,23 @@ def home(request):
 
     current_used = 0
 
-    digital_devices = customer.digital_water_devices.filter(active =True)
+    digital_devices = customer.digital_water_devices.filter(active=True)
     digital_device = digital_devices[0] if len(digital_devices) > 0 else None
 
-    mechanics_devices = customer.mechanics_water_devices.filter(active =True)
-    mechanics_device = mechanics_devices[0] if len(mechanics_devices) > 0 else None
+    mechanics_devices = customer.mechanics_water_devices.filter(active=True)
+    mechanics_device = mechanics_devices[0] if len(
+        mechanics_devices) > 0 else None
 
-    digital_used = digital_device.used_at(current_month,current_year) if digital_device else 0
-    mechanics_used = mechanics_device.used_at(current_month,current_year) if mechanics_device else 0
+    digital_used = digital_device.used_at(
+        current_month, current_year) if digital_device else 0
+    mechanics_used = mechanics_device.used_at(
+        current_month, current_year) if mechanics_device else 0
 
     current_used += digital_used if digital_used is not None else 0
     current_used += mechanics_used if mechanics_used is not None else 0
 
-    current_water_price_config = WaterPriceConfig.objects.get( month=current_month,year=current_year)
+    current_water_price_config = WaterPriceConfig.objects.get(
+        time__month=current_month, time__year=current_year)
 
     return render(request, 'customer/customer_home.html', {
         'water_bills': water_bills,
@@ -84,7 +91,7 @@ def device_info(request, device_type=None, device_token=None):
     collects = None
 
     if device is not None:
-        collects = device.collects.all().order_by('-year', '-month', '-created_at')
+        collects = device.collects.all().order_by('-time__year', '-time__month', '-created_at')
 
     return render(request, 'customer/device_info.html', {
         'device_type': device_type,
@@ -113,8 +120,9 @@ def update_mechanics_device_value(request, device_token):
             now = datetime.datetime.now()
             month = now.month
             year = now.year
+            time = get_or_create_time(month=month, year=year)
             MechanicsWaterDeviceCollect.objects.create(
-                month=month, year=year, device=device, image=image, value=value)
+                time=time, device=device, image=image, value=value)
             return redirect(next)
         else:
             return render(request, 'customer/update_mechanics_device_value.html', {
@@ -135,8 +143,9 @@ def api_update_digital_device_value(request, device_token, value):
         now = datetime.datetime.now()
         month = now.month
         year = now.year
+        time = get_or_create_time(month=month, year=year)
         DigitalWaterDeviceCollect.objects.create(
-            month=month, year=year, device=device, value=value)
+            time=time, device=device, value=value)
         return HttpResponse({'status': 'ok'}, status=201)
     else:
         return HttpResponse({'error': 'Need value!'}, status=404)
@@ -152,26 +161,26 @@ def api_parse_image_device_value(request):
         value = pytesseract.image_to_string(Image.open(image))
         value = int(value)
         res = {
-        'value': value
+            'value': value
         }
         return HttpResponse(json.dumps(res), content_type='application/json')
 
     except Exception as e:
         res = {
-        'value': value,
-        'error': str(e)
+            'value': value,
+            'error': str(e)
         }
-        return HttpResponse(json.dumps(res), content_type='application/json',status=404)
-
+        return HttpResponse(json.dumps(res), content_type='application/json', status=404)
 
 
 def price_info(request):
 
     price_configs = WaterPriceConfig.objects.all()
 
-    return render(request,'customer/price_info.html',{
+    return render(request, 'customer/price_info.html', {
         'price_configs': price_configs
     })
+
 
 def issue_message(request):
     if not request.user.is_authenticated() or not request.user.is_customer:

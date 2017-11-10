@@ -1,0 +1,13 @@
+{% extends 'main/header.html' %}
+
+{% block brand %}
+  SmartWater Staff
+{% endblock %}
+{% block navbar_1 %}
+  <li id='customer_management_nav'>
+    <a href="{% url 'water_staff:customer_management' %}">Quản lý khách hàng</a>
+  </li>
+  <li id='revenue_statistics_nav'>
+    <a href="{% url 'water_staff:revenue_statistics' %}">Thống kê doanh thu</a>
+  </li>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'water_staff/water_staff_base.html' %}
+{% load humanize %}
+{% block title %}Quản lý doanh thu{% endblock%}
+{% block active_nav %}#revenue_statistics_nav{% endblock %}
+{% block head_1 %}
+  <script type="text/javascript" src="/static/plugins/fusioncharts/js/fusioncharts.js"></script>
+  <script type="text/javascript" src="/static/plugins/fusioncharts/js/themes/fusioncharts.theme.ocean.js"></script>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h3>Quản lý doanh thu</h3>
+  <div id='revenue_chart'>
+  </div>
+  <div>
+    {{revenue_chart|safe}}
+  </div>
+  <div id='used_chart'>
+  </div>
+  <div>
+    {{used_chart|safe}}
+  </div>
+  <div>
+    {% for rs in revenue_statistics_per_month %}
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <div class="panel-title">
+            {{rs.month}} / {{rs.year}}
+          </div>
+        </div>
+        <div class="panel-body">
+          <table class="table">
+            <tr>
+              <th>
+                Tổng số nước sử dụng
+              </th>
+              <td>
+                {% if rs.total_used %}
+                  {{rs.total_used|intcomma}}
+                {% else %}
+                  Chưa cập nhật
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th>
+                Số hộ dân sử dụng
+              </th>
+              <td>
+                {{rs.customer_count|intcomma}}
+              </td>
+            </tr>
+            <tr>
+              <th>
+                Số hộ dân đã đóng tiền
+              </th>
+              <td>
+                {{rs.paid_customer_count|intcomma}}
+              </td>
+            </td>
+            <tr>
+              <th>
+                Tổng số tiền cần thu
+              </th>
+              <td>
+                {% if rs.total_money %}
+                  {{rs.total_money|intcomma}} VND
+                {% else %}
+                  Chưa cập nhật
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th>
+                Số tiền đã thu được
+              </th>
+              <td>
+                {{rs.paid_money|intcomma}} VND
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    {% empty %}
+      Chưa có thống kê
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

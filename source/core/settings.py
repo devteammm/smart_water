@@ -43,8 +43,8 @@ INSTALLED_APPS = [
     'sysauth',
     'main',
     'customer',
-    'company_staff',
-    'department_staff',
+    'water_company',
+    'water_staff',
 ]
 
 MIDDLEWARE = [

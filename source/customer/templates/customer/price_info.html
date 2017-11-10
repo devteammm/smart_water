@@ -9,7 +9,7 @@
     {% for price_config in price_configs %}
       <div class="panel panel-default">
         <div class="panel-heading">
-          <h4>Tháng {{price_config.month}} / {{price_config.year}}</h4>
+          <h4>Tháng {{price_config.time.month}} / {{price_config.time.year}}</h4>
         </div>
         <div class="panel-body">
           {% include 'includes/short_water_price_config.html' %}

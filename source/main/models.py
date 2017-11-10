@@ -1,6 +1,7 @@
 from django.db import models
 from sysauth.models import Customer
 import datetime
+from django.db.models import Count,Max,Min,Sum
 
 MONTHS = (
     (1,1),
@@ -30,7 +31,7 @@ class WaterDeviceMixin:
     def last_collect_at(self,month,year):
         if year <= self.begin_year and month < self.begin_month:
             return None
-        cs = self.collects.filter(month=month,year=year).order_by('-created_at')
+        cs = self.collects.filter(time__month=month,time__year=year).order_by('-created_at')
         return cs[0] if cs.count() > 0 else None
 
 
@@ -108,11 +109,22 @@ class MechanicsWaterDevice(models.Model,WaterDeviceMixin):
     def __unicode__(self):
         return self.__str__()
 
+class Month(models.Model):
+    year = models.IntegerField(default=1)
+    month = models.IntegerField(default=1,choices=MONTHS)
+
+    class Meta:
+        ordering = ('-year','-month')
+
+    def __str__(self):
+        return '%s / %s' %( self.month,self.year)
+    def __unicode__(self):
+        return self.__str__()
 
 class DigitalWaterDeviceCollect(models.Model):
 
-    year = models.IntegerField(default=1)
-    month = models.IntegerField(default=1,choices=MONTHS)
+    time = models.ForeignKey(Month)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -120,15 +132,15 @@ class DigitalWaterDeviceCollect(models.Model):
     value = models.IntegerField(default=0)
 
     def __str__(self):
-        return 'month "%s", value "%s",device "%s"'% (self.month,self.value,self.device)
+        return 'month "%s", value "%s",device "%s"'% (self.time.month,self.value,self.device)
     def __unicode__(self):
         return self.__str__()
 
 
 class MechanicsWaterDeviceCollect(models.Model):
 
-    year = models.IntegerField(default=1)
-    month = models.IntegerField(default=1,choices=MONTHS)
+    time = models.ForeignKey(Month)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -137,13 +149,16 @@ class MechanicsWaterDeviceCollect(models.Model):
     value = models.IntegerField(default=0)
 
     def __str__(self):
-        return 'month "%s", value "%s",device "%s"'% (self.month,self.value,self.device)
+        return 'month "%s", value "%s",device "%s"'% (self.time.month,self.value,self.device)
     def __unicode__(self):
         return self.__str__()
 
+
+
+
 class DigitalWaterDeviceUsed(models.Model):
-    year = models.IntegerField(default=1)
-    month = models.IntegerField(default=1,choices=MONTHS)
+
+    time = models.ForeignKey(Month)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -153,13 +168,14 @@ class DigitalWaterDeviceUsed(models.Model):
     used = models.IntegerField(default=0)
 
     def __str__(self):
-        return 'month "%s", used "%s",device "%s"'% (self.month,self.used,self.device)
+        return 'month "%s", used "%s",device "%s"'% (self.time.month,self.used,self.device)
     def __unicode__(self):
         return self.__str__()
 
 class MechanicsWaterDeviceUsed(models.Model):
-    year = models.IntegerField(default=1)
-    month = models.IntegerField(default=1,choices=MONTHS)
+
+    time = models.ForeignKey(Month)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -169,15 +185,14 @@ class MechanicsWaterDeviceUsed(models.Model):
     used = models.IntegerField(default=0,null=True)
 
     def __str__(self):
-        return 'month "%s", used "%s",device "%s"'% (self.month,self.used,self.device)
+        return 'month "%s", used "%s",device "%s"'% (self.time.month,self.used,self.device)
     def __unicode__(self):
         return self.__str__()
 
 
 class WaterPriceConfig(models.Model):
     NOT_SET = -1
-    month = models.IntegerField(default=1,choices=MONTHS)
-    year = models.IntegerField(default=1)
+    time = models.ForeignKey(Month)
 
     default_price = models.IntegerField(default=0)
 
@@ -185,7 +200,7 @@ class WaterPriceConfig(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ('-month','-year')
+        ordering = ('-time__month','-time__year')
 
     def __str__(self):
         return ' %s/%s : %s, and %s other'%(self.month,self.year,self.default_price,self.prices.count())
@@ -224,6 +239,8 @@ class WaterPriceConfig(models.Model):
                     result.append( (p,used, used * p.price))
                 elif used > p.max_value:
                     result.append((p,p.max_value,p.max_value * p.price))
+                else:
+                    result.append((p,0,0))
             elif p.is_range:
                 if used >= p.min_value and used <= p.max_value:
                     u = used - p.min_value +1
@@ -231,12 +248,16 @@ class WaterPriceConfig(models.Model):
                 elif used > p.max_value:
                     u = p.max_value - p.min_value +1
                     result.append((p,u,u * p.price))
+                else:
+                    result.append((p,0,0))
+
             elif p.is_gt:
-                if used >= p.max_value:
-                    u = used - p.max_value +1
+                if used >= p.min_value:
+                    u = used - p.min_value +1
                     result.append((p,u,u * p.price))
-            else:
-                pass
+                else:
+                    result.append((p,0,0))
+
 
         return result
 
@@ -273,8 +294,7 @@ class WaterPrice(models.Model):
         return self.min_value != self.NOT_SET and self.max_value == self.NOT_SET
 
 class WaterBill(models.Model):
-    year = models.IntegerField(default=1)
-    month = models.IntegerField(default=1,choices=MONTHS)
+    time = models.ForeignKey(Month)
 
     customer = models.ForeignKey(Customer,related_name='water_bills')
 
@@ -288,10 +308,10 @@ class WaterBill(models.Model):
     is_paid = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ('-year','-month')
+        ordering = ('-time__year','-time__month')
 
     def __str__(self):
-        return '%s - %s, %s, used "%s", price "%s", total: "%s"' % (self.month,self.year,self.customer,self.used,self.price,self.total)
+        return '%s - %s, %s, used "%s", price "%s", total: "%s"' % (self.time.month,self.time.year,self.customer,self.used,self.price,self.total)
     def __unicode__(self):
         return self.__str__()
 

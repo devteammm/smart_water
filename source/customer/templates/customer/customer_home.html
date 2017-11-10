@@ -11,6 +11,9 @@
     </a>
   </div>
   <hr /> {% endif %}
+  <h3>
+    Công ty đăng ký: {{request.user.customer_profile.company}}
+  </h3>
   <div class="panel panel-default">
     <div class="panel-body">
       <h3>
@@ -69,7 +72,7 @@
         <div class="panel-heading">
           <h4>
               <b>
-                Tháng {{bill.month}}/{{bill.year}}
+                Tháng {{bill.time.month}} / {{bill.time.year}}
               </b> -
               <span>{{bill.total|intcomma}} đ</span> -
               <span>

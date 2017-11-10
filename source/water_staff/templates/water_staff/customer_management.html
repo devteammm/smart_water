@@ -1,0 +1,50 @@
+{% extends 'water_staff/water_staff_base.html' %}
+{% block title %}Quản lý khách hàng{% endblock%}
+{% block active_nav %}#customer_management_nav{% endblock %}
+{% block content %}
+<div class="container">
+  <h3>Quản lý khách hàng</h3>
+  <h3>
+    Danh sách khách hàng
+  </h3>
+  <div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>
+            ID
+          </th>
+          <th>
+            Tên khách hàng
+          </th>
+          <th>
+            Thiết bị
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in customers %}
+          <tr>
+            <td>
+              {{c.id}}
+            </td>
+            <td>
+              {{c.name}}
+            </td>
+            <td>
+              {% for device in c.digital_water_devices.all %}
+                {% include 'includes/water_device/digital_device.html' %}
+              {% endfor %}
+              {% for device in c.mechanics_water_devices.all %}
+                {% include 'includes/water_device/mechanics_device.html' %}
+              {% endfor %}
+            </td>
+          </tr>
+        {% empty %}
+          Không có khách hàng nào!
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

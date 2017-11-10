@@ -7,6 +7,12 @@ HOST: http://128.199.102.46
   * In moment, Customer has only digital or mechanics water device
   * One water device has token, begin_value
 
+### Staff 1
+  * username: water_staff1
+  * password: 1
+### Staff 2
+  * username: water_staff2
+  * password: 1
 
 ### Customer 1
   * Use digital water device
