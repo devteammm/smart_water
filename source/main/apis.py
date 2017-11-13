@@ -3,6 +3,19 @@ from .models import *
 from sysauth import *
 from django.db.models import Count,Max,Min,Sum
 
+def get_customer_used(customer,month=None,year=None):
+    try:
+        return WaterBill.objects.get(customer=customer,time__month=month,time__year=year).used
+    except WaterBill.DoesNotExist as e:
+        return 0
+
+def get_customer_money(customer,month=None,year=None):
+    try:
+        return WaterBill.objects.get(customer=customer,time__month=month,time__year=year).total
+    except WaterBill.DoesNotExist as e:
+        return 0
+
+
 def get_total_used(company,month=None,year=None):
     total_used = WaterBill.objects.filter(customer__company = company, time__month = month,time__year=year).aggregate(Sum('used'))['used__sum']
 

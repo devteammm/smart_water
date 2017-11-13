@@ -1,0 +1,87 @@
+{% extends 'customer/customer_base.html' %}
+{% load humanize %}
+{% block title %}Thống kê sử dụng{%endblock%}
+{% block active_nav %}#used_statistics_nav{% endblock %}
+{% block content %}
+<div class="container">
+  <h3>Thống kê sử dụng nước</h3>
+  <div>
+    <div id='used_chart'>
+    </div>
+    <hr />
+    <div id='money_chart'>
+    </div>
+    <hr />
+    <div>
+      <h3>Lịch sử </h3>
+      <div>
+        {% for bill in water_bills %}
+        <div class="bill-card panel {% if bill.is_paid %}panel-success{% else %}panel-danger{% endif%}">
+          <div class="panel-heading">
+            <h4>
+                <b>
+                  Tháng {{bill.time.month}} / {{bill.time.year}}
+                </b> -
+                <span>{{bill.total|intcomma}} đ</span> -
+                <span>
+                  {% if bill.is_paid %} Đã thanh toán {% else %}Chưa thanh toán{% endif %}
+                </span>
+              </h4>
+          </div>
+          <div class="panel-body">
+            <div>
+              <label>Đã sử dụng: </label> {{bill.used}} số
+            </div>
+            {% if bill.digital_water_device_used %}
+            <div>
+              <b>
+                  Đồng hồ điện tử
+                </b>
+              <div>
+                <b>
+                    Chỉ số tháng này:
+                  </b> {{bill.digital_water_device_used.collect.value}}
+              </div>
+              <div>
+                <b>
+                    Chỉ số tháng trước:
+                  </b> {{bill.digital_water_device_used.collect_before.value}}
+              </div>
+            </div>
+            {% endif %} {% if bill.mechanics_water_device_used %}
+            <div>
+              <b>Đồng hồ số</b>
+              <div>
+                <b>
+                    Chỉ số tháng này:
+                  </b> {{bill.mechanics_water_device_used.collect.value}}
+              </div>
+              <div>
+                <b>
+                    Chỉ số tháng trước:
+                  </b> {{bill.mechanics_water_device_used.collect_before.value}}
+              </div>
+            </div>
+            {% endif %}
+            <div>
+              <label>Giá: </label> {% with bill as water_bill %} {% include 'includes/total_price_table.html' %} {% endwith %}
+            </div>
+          </div>
+          <div class="panel-footer">
+            <div>
+              <label>Thành tiền: </label> {{bill.total|intcomma}} đ
+            </div>
+          </div>
+        </div>
+        {% empty %} Empty {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block js_1 %}
+<script type="text/javascript" src="/static/plugins/fusioncharts/js/fusioncharts.js"></script>
+<script type="text/javascript" src="/static/plugins/fusioncharts/js/themes/fusioncharts.theme.ocean.js"></script>
+{{used_chart | safe}}
+{{money_chart|safe}}
+{% endblock %}

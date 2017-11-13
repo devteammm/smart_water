@@ -5,7 +5,7 @@ from functools import reduce
 import json
 from main.models import IssueMessage, AppRate
 from django.db.models import Avg
-from main.models import WaterPriceConfig, DigitalWaterDevice, MechanicsWaterDevice, DigitalWaterDeviceCollect, MechanicsWaterDeviceCollect
+from main.models import WaterBill,WaterPriceConfig, DigitalWaterDevice, MechanicsWaterDevice, DigitalWaterDeviceCollect, MechanicsWaterDeviceCollect
 from random import randint
 import datetime
 
@@ -13,7 +13,7 @@ from PIL import Image
 import pytesseract
 
 from main.apis import get_or_create_time
-
+from .charts import customer_used_chart,customer_money_chart
 
 def home(request):
     if not request.user.is_authenticated() or not request.user.is_customer:
@@ -61,6 +61,19 @@ def home(request):
         'current_water_price_config': current_water_price_config
     })
 
+def used_statistics(request):
+    if not request.user.is_authenticated() or not request.user.is_customer:
+        return HttpResponse('Chi danh cho Customer')
+    customer = request.user.customer_profile
+    used_chart = customer_used_chart(customer=customer)
+    money_chart = customer_money_chart(customer=customer)
+    water_bills = WaterBill.objects.filter(customer=customer)
+    return render(request,'customer/used_statistics.html',{
+        'customer': customer,
+        'used_chart': used_chart.render(),
+        'money_chart': money_chart.render(),
+        'water_bills': water_bills
+    })
 
 def device_management(request):
     if not request.user.is_authenticated() or not request.user.is_customer:

@@ -222,8 +222,8 @@ class WaterPriceConfig(models.Model):
                 elif used > p.max_value:
                     s += (p.max_value - p.min_value +1) * p.price
             elif p.is_gt:
-                if used >= p.max_value:
-                    s += (used - p.max_value +1) * p.price
+                if used >= p.min_value:
+                    s += (used - p.min_value +1) * p.price
             else:
                 pass
 
