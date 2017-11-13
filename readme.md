@@ -11,7 +11,7 @@ HOST: http://128.199.102.46
   * Customer
   * Water Company
   * Water Staff
-  * Admin
+  * Smart water Admin
 
 ### Staff 1
   * username: water_staff1
