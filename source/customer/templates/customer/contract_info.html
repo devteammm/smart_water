@@ -1,0 +1,25 @@
+{% extends 'customer/customer_base.html' %}
+{% block title %}Thông tin hợp đồng{% endblock %}
+{% block active_nav %}#contract_info_nav{% endblock %}
+{% block content %}
+<div class="container">
+  <h3>Danh sách hợp đồng</h3>
+  <hr />
+  <div>
+    {% for water_contract in contracts %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="panel-title">
+          {{water_contract.begin_time}}          
+        </div>
+      </div>
+      <div class="panel-body">
+        {% include 'includes/water_contract.html' %}
+      </div>
+    </div>
+    {% empty %}
+      Chưa có hợp đồng nào!
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

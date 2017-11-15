@@ -1,4 +1,6 @@
 
+*.sqlite3
+
 # image upload
 media_root/
 # Byte-compiled / optimized / DLL files

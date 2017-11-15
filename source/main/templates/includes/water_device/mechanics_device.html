@@ -1,2 +1,3 @@
 {% extends 'includes/water_device/water_device.html' %}
 {% block device_type %}Đồng hồ cơ  {% endblock %}
+{% block more_url %}{% url 'customer:device_info' 'mechanics' device.token %}{% endblock %}

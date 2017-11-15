@@ -98,7 +98,9 @@ def calculate_water_device_used(month,year,update=False):
 
 def create_water_bill_for_customer(customer,month,year,update=True):
 
-    price_config = WaterPriceConfig.objects.get(time__month=month,time__year=year)
+    contract = WaterContract.objects.contract_for_customer_at(customer=customer,month=month,year=year)
+    contract_type = contract.type
+    price_config = WaterPriceConfig.objects.get(contract_type=contract_type, time__month=month,time__year=year)
 
     bill = None
     try:
@@ -112,12 +114,14 @@ def create_water_bill_for_customer(customer,month,year,update=True):
     bill.customer = customer
 
     try:
-        bill.digital_water_device_used = DigitalWaterDeviceUsed.objects.get(device__customer=customer, device__active=True,time__month=month,time__year=year)
+        if contract.digital_device:
+            bill.digital_water_device_used = DigitalWaterDeviceUsed.objects.get(device=contract.digital_device, device__active=True,time__month=month,time__year=year)
     except DigitalWaterDeviceUsed.DoesNotExist as e:
         pass
 
     try:
-        bill.mechanics_water_device_used = MechanicsWaterDeviceUsed.objects.get(device__customer=customer, device__active=True,time__month=month,time__year=year)
+        if contract.mechanics_device:
+            bill.mechanics_water_device_used = MechanicsWaterDeviceUsed.objects.get(device=contract.mechanics_device, device__active=True,time__month=month,time__year=year)
     except MechanicsWaterDeviceUsed.DoesNotExist as e:
         pass
 

@@ -1,7 +1,7 @@
 from django.db import models
 from sysauth.models import Customer
 import datetime
-from django.db.models import Count,Max,Min,Sum
+from django.db.models import Count,Max,Min,Sum, Q
 
 MONTHS = (
     (1,1),
@@ -17,6 +17,19 @@ MONTHS = (
     (11,11),
     (12,12)
 )
+
+
+class Month(models.Model):
+    year = models.IntegerField(default=1)
+    month = models.IntegerField(default=1,choices=MONTHS)
+
+    class Meta:
+        ordering = ('-year','-month')
+
+    def __str__(self):
+        return '%s / %s' %( self.month,self.year)
+    def __unicode__(self):
+        return self.__str__()
 
 class WaterDeviceMixin:
     def last_collect_before(self,month,year):
@@ -78,7 +91,7 @@ class WaterDeviceMixin:
         return self.used_at(now.month,now.year)
 
 class DigitalWaterDevice(models.Model,WaterDeviceMixin):
-    customer = models.ForeignKey(Customer,related_name='digital_water_devices')
+    # customer = models.ForeignKey(Customer,related_name='digital_water_devices')
     token = models.CharField(default='',max_length = 255)
     active = models.BooleanField(default=False)
 
@@ -95,7 +108,7 @@ class DigitalWaterDevice(models.Model,WaterDeviceMixin):
 
 
 class MechanicsWaterDevice(models.Model,WaterDeviceMixin):
-    customer = models.ForeignKey(Customer,related_name='mechanics_water_devices')
+    # customer = models.ForeignKey(Customer,related_name='mechanics_water_devices')
     token = models.CharField(default='',max_length = 255)
     active = models.BooleanField(default=False)
 
@@ -109,17 +122,65 @@ class MechanicsWaterDevice(models.Model,WaterDeviceMixin):
     def __unicode__(self):
         return self.__str__()
 
-class Month(models.Model):
-    year = models.IntegerField(default=1)
-    month = models.IntegerField(default=1,choices=MONTHS)
 
-    class Meta:
-        ordering = ('-year','-month')
 
+class WaterContractType(models.Model):
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=255,unique=True)
     def __str__(self):
-        return '%s / %s' %( self.month,self.year)
+        return '%s'%self.name
     def __unicode__(self):
         return self.__str__()
+
+class WaterContractManager(models.Manager):
+    def contract_for_customer_at(self,customer=None,month=None,year=None):
+        begin_time_lte = Q(begin_time__year__lte=year) | (Q(begin_time__year = year) & Q(begin_time__month__lte=month))
+        end_time_gte = Q(end_time__year__gte = year) | (Q(end_time__year = year) & Q(end_time__month__gte=month))
+
+        contracts = self.filter(begin_time_lte,Q(end_time = None) | end_time_gte,customer=customer)
+
+        if contracts.count() > 0 :
+            return contracts[0]
+        else:
+            return None
+
+class WaterContract(models.Model):
+
+    objects = WaterContractManager()
+
+    customer = models.ForeignKey(Customer,related_name='water_contracts')
+    type = models.ForeignKey(WaterContractType,related_name='contracts')
+
+    begin_time = models.ForeignKey(Month,null=True,related_name='begin_of_water_contracts')
+    end_time = models.ForeignKey(Month,null=True,related_name='end_of_water_contracts')
+
+    digital_device = models.ForeignKey(DigitalWaterDevice,null=True,related_name='contracts')
+    mechanics_device = models.ForeignKey(MechanicsWaterDevice,null=True,related_name='contracts')
+
+    def __str__(self):
+        return '%s is %s, begin: %s, end: %s' % (self.customer,self.type,self.begin_time,self.end_time)
+    def __unicode__(self):
+        return self.__str__()
+
+    def is_active(self):
+        now = datetime.datetime.now()
+        current_month = now.month
+        current_year = now.year
+
+        if current_year < self.begin_time.year:
+            return False
+        if current_year == self.begin_time.year and current_month < self.begin_time.month:
+            return False
+
+        if self.end_time:
+            if current_year > self.end_time.year:
+                return False
+            if current_year == self.end_time.year and current_month > self.end_time.month:
+                return False
+        return True
+
+
+
 
 class DigitalWaterDeviceCollect(models.Model):
 
@@ -190,9 +251,12 @@ class MechanicsWaterDeviceUsed(models.Model):
         return self.__str__()
 
 
+
 class WaterPriceConfig(models.Model):
     NOT_SET = -1
     time = models.ForeignKey(Month)
+
+    contract_type = models.ForeignKey(WaterContractType,related_name='price_configs')
 
     default_price = models.IntegerField(default=0)
 

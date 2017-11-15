@@ -5,7 +5,7 @@ from functools import reduce
 import json
 from main.models import IssueMessage, AppRate
 from django.db.models import Avg
-from main.models import WaterBill,WaterPriceConfig, DigitalWaterDevice, MechanicsWaterDevice, DigitalWaterDeviceCollect, MechanicsWaterDeviceCollect
+from main.models import WaterContract, WaterBill, WaterPriceConfig, DigitalWaterDevice, MechanicsWaterDevice, DigitalWaterDeviceCollect, MechanicsWaterDeviceCollect
 from random import randint
 import datetime
 
@@ -13,7 +13,8 @@ from PIL import Image
 import pytesseract
 
 from main.apis import get_or_create_time
-from .charts import customer_used_chart,customer_money_chart
+from .charts import customer_used_chart, customer_money_chart
+
 
 def home(request):
     if not request.user.is_authenticated() or not request.user.is_customer:
@@ -29,14 +30,14 @@ def home(request):
     current_month = now.month
     current_year = now.year
 
+    current_water_contract = WaterContract.objects.contract_for_customer_at(
+        customer=customer, month=current_month, year=current_year)
+
     current_used = 0
 
-    digital_devices = customer.digital_water_devices.filter(active=True)
-    digital_device = digital_devices[0] if len(digital_devices) > 0 else None
+    digital_device = current_water_contract.digital_device
 
-    mechanics_devices = customer.mechanics_water_devices.filter(active=True)
-    mechanics_device = mechanics_devices[0] if len(
-        mechanics_devices) > 0 else None
+    mechanics_device = current_water_contract.mechanics_device
 
     digital_used = digital_device.used_at(
         current_month, current_year) if digital_device else 0
@@ -46,8 +47,9 @@ def home(request):
     current_used += digital_used if digital_used is not None else 0
     current_used += mechanics_used if mechanics_used is not None else 0
 
-    current_water_price_config = WaterPriceConfig.objects.get(
-        time__month=current_month, time__year=current_year)
+
+    current_water_price_config = WaterPriceConfig.objects.get(contract_type=current_water_contract.type,
+                                                              time__month=current_month, time__year=current_year)
 
     return render(request, 'customer/customer_home.html', {
         'water_bills': water_bills,
@@ -58,8 +60,10 @@ def home(request):
         'digital_device': digital_device,
         'mechanics_device': mechanics_device,
         'current_used': current_used,
+        'current_water_contract': current_water_contract,
         'current_water_price_config': current_water_price_config
     })
+
 
 def used_statistics(request):
     if not request.user.is_authenticated() or not request.user.is_customer:
@@ -68,19 +72,32 @@ def used_statistics(request):
     used_chart = customer_used_chart(customer=customer)
     money_chart = customer_money_chart(customer=customer)
     water_bills = WaterBill.objects.filter(customer=customer)
-    return render(request,'customer/used_statistics.html',{
+    return render(request, 'customer/used_statistics.html', {
         'customer': customer,
         'used_chart': used_chart.render(),
         'money_chart': money_chart.render(),
         'water_bills': water_bills
     })
 
+def contract_info(request):
+    if not request.user.is_authenticated() or not request.user.is_customer:
+        return HttpResponse('Chi danh cho Customer')
+    customer = request.user.customer_profile
+
+    contracts = customer.water_contracts.all()
+
+    return render(request,'customer/contract_info.html',{
+        'customer': customer,
+        'contracts': contracts
+    })
+
 def device_management(request):
     if not request.user.is_authenticated() or not request.user.is_customer:
         return HttpResponse('Chi danh cho Customer')
+    customer = request.user.customer_profile
 
-    digital_devices = request.user.customer_profile.digital_water_devices.all()
-    mechanics_devices = request.user.customer_profile.mechanics_water_devices.all()
+    digital_devices = DigitalWaterDevice.objects.filter(contracts__customer = customer)
+    mechanics_devices = MechanicsWaterDevice.objects.filter(contracts__customer = customer)
 
     return render(request, 'customer/device_management.html', {
         'digital_devices': digital_devices,
@@ -104,7 +121,8 @@ def device_info(request, device_type=None, device_token=None):
     collects = None
 
     if device is not None:
-        collects = device.collects.all().order_by('-time__year', '-time__month', '-created_at')
+        collects = device.collects.all().order_by(
+            '-time__year', '-time__month', '-created_at')
 
     return render(request, 'customer/device_info.html', {
         'device_type': device_type,
@@ -122,7 +140,7 @@ def update_mechanics_device_value(request, device_token):
     customer = request.user.customer_profile
 
     device = get_object_or_404(
-        MechanicsWaterDevice, customer=customer, token=device_token)
+        MechanicsWaterDevice, contracts__customer=customer, token=device_token)
 
     if request.method == 'POST':
         image = request.FILES.get('image')

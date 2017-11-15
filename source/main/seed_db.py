@@ -20,6 +20,9 @@ def clear_db():
     DigitalWaterDeviceUsed.objects.all().delete()
     MechanicsWaterDeviceUsed.objects.all().delete()
 
+    WaterContractType.objects.all().delete()
+    WaterContract.objects.all().delete()
+
     WaterPriceConfig.objects.all().delete()
     WaterPrice.objects.all().delete()
 
@@ -54,29 +57,35 @@ def create_customer():
     print('company')
     print(company)
 
+    begin_time = get_or_create_time(month=5,year=2017)
+
+    binh_dan_type = WaterContractType.objects.get(code='binh_dan')
+    doanh_nghiep_type = WaterContractType.objects.get(code='doanh_nghiep')
+    nha_may_type = WaterContractType.objects.get(code='nha_may')
+
     # --------------------------
     customer = Customer.objects.create_customer(
         company=company, username='digital_customer1', password='1', name='digital customer 1', address='Ha Noi', phone='012345678')
-    device = DigitalWaterDevice.objects.create(
-        customer=customer, token='digital_device1', active=True)
+    device = DigitalWaterDevice.objects.create(token='digital_device1', active=True)
+    water_contract = WaterContract.objects.create(digital_device=device, customer=customer,type=binh_dan_type,begin_time=begin_time)
 
     # --------------------------
     customer = Customer.objects.create_customer(
         company=company, username='mechanics_customer1', password='1', name='mechanics customer 1', address='Ha Noi', phone='012345678')
-    device = MechanicsWaterDevice.objects.create(
-        customer=customer, token='mechanics_device1', active=True)
+    device = MechanicsWaterDevice.objects.create( token='mechanics_device1', active=True)
+    water_contract = WaterContract.objects.create(mechanics_device=device, customer=customer,type=doanh_nghiep_type,begin_time=begin_time)
 
     # --------------------------
     customer = Customer.objects.create_customer(
         company=company, username='digital_customer2', password='1', name='digital customer 2', address='Ha Noi', phone='012345678')
-    device = DigitalWaterDevice.objects.create(
-        customer=customer, token='digital_device_2', active=True)
+    device = DigitalWaterDevice.objects.create(token='digital_device_2', active=True)
+    water_contract = WaterContract.objects.create(digital_device=device, customer=customer,type=nha_may_type,begin_time=begin_time)
 
     # --------------------------
     customer = Customer.objects.create_customer(
         company=company, username='mechanics_customer2', password='1', name='mechanics customer 2', address='Ha Noi', phone='012345678')
-    device = MechanicsWaterDevice.objects.create(
-        customer=customer, token='mechanics_device_2', active=True)
+    device = MechanicsWaterDevice.objects.create( token='mechanics_device_2', active=True)
+    water_contract = WaterContract.objects.create(mechanics_device=device, customer=customer,type=binh_dan_type,begin_time=begin_time)
 
 
 SEED_TIMES = (
@@ -120,10 +129,26 @@ def seed_device_collect():
             MechanicsWaterDeviceCollect.objects.create(
                 time=time, device=device, value=value)
 
+def create_water_contract_type():
+    print('create_water_contract_type')
+    binh_dan_type = WaterContractType.objects.create(name='Bình dân',code='binh_dan')
+    doanh_nghiep_type = WaterContractType.objects.create(name='Doanh nghiệp',code='doanh_nghiep')
+    nha_may_type = WaterContractType.objects.create(name='Nhà máy',code='nha_may')
 
 def seed_water_price_config():
-
     print('seed_water_price_config')
+
+    binh_dan_type = WaterContractType.objects.get(code='binh_dan')
+    doanh_nghiep_type = WaterContractType.objects.get(code='doanh_nghiep')
+    nha_may_type = WaterContractType.objects.get(code='nha_may')
+
+    seed_water_price_config_for_contract_type(binh_dan_type)
+    seed_water_price_config_for_contract_type(doanh_nghiep_type)
+    seed_water_price_config_for_contract_type(nha_may_type)
+
+def seed_water_price_config_for_contract_type(contract_type):
+
+    print('seed_water_price_config: %s' % contract_type)
 
     CONFIG_SEED_TIMES = (
         (5, 2017),
@@ -138,7 +163,7 @@ def seed_water_price_config():
     for month, year in CONFIG_SEED_TIMES:
         default_price = randint(1000, 4000)
         time = get_or_create_time(month=month, year=year)
-        config = WaterPriceConfig.objects.create(
+        config = WaterPriceConfig.objects.create(contract_type=contract_type,
             time=time, default_price=default_price)
 
         max_value = randint(20, 40)
@@ -170,6 +195,8 @@ def seed_db():
     print('seed_db')
     create_water_company()
     create_water_staff()
+
+    create_water_contract_type()
 
     create_customer()
 

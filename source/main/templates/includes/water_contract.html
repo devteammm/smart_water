@@ -1,0 +1,71 @@
+<table class="table">
+  <tr>
+    <th>
+      Khách hàng:
+    </th>
+    <td>
+      {{water_contract.customer}}
+    </td>
+  </tr>
+  <tr>
+    <th>
+      Loại hợp đồng:
+    </th>
+    <td>
+      {{water_contract.type}}
+    </td>
+  </tr>
+  <tr>
+    <th>
+      Ngày bắt đầu:
+    </th>
+    <td>
+      {{water_contract.begin_time}}
+    </td>
+  </tr>
+  <tr>
+    <th>
+      Ngày kết thúc:
+    </th>
+    <td>
+      {% if water_contract.end_time %}
+        {{water_contract.end_time}}
+      {% else %}
+        Chưa xác định
+      {% endif %}
+    </td>
+  </tr>
+
+  <tr>
+    <th>
+      Trạng thái hiện tại:
+    </th>
+    <td>
+      {% if water_contract.is_active %}
+        Có hiệu lực
+      {% else %}
+        Không có hiệu lực
+      {% endif %}
+      ({% now 'm / Y' %})
+    </td>
+  </tr>
+
+  <tr>
+    <th>
+      Thiết bị:
+    </th>
+    <td>
+      {% if water_contract.digital_device %}
+        {% with water_contract.digital_device as device %}
+          {% include 'includes/water_device/digital_device.html' %}
+        {% endwith %}
+      {% endif %}
+
+      {% if water_contract.mechanics_device %}
+        {% with water_contract.mechanics_device as device %}
+          {% include 'includes/water_device/mechanics_device.html' %}
+        {% endwith %}
+      {% endif %}
+    </td>
+  </tr>
+</table>

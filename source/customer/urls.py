@@ -7,6 +7,7 @@ app_name='customer'
 urlpatterns = [
     url(r'^$',home,name='home'),
     url(r'^used_statistics$',used_statistics,name='used_statistics'),
+    url(r'^contract_info$',contract_info,name='contract_info'),
     url(r'^device_management$',device_management,name='device_management'),
     url(r'^device_info/(?P<device_type>\w+)/(?P<device_token>\w+)',device_info,name='device_info'),
     url(r'^update_mechanics_device_value/(?P<device_token>\w+)',update_mechanics_device_value,name='update_mechanics_device_value'),

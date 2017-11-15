@@ -10,11 +10,16 @@
       Cập nhật chỉ số đồng hồ cơ
     </a>
   </div>
-  <hr /> {% endif %}
-  <h3>
-    Công ty đăng ký: {{request.user.customer_profile.company}}
-  </h3>
+  <hr />
+  {% endif %}
+
+  <!-- DEBT -->
   <div class="panel panel-default">
+    <div class="panel-heading">
+      <div class="panel-title">
+        Công ty đăng ký: {{request.user.customer_profile.company}}
+      </div>
+    </div>
     <div class="panel-body">
       <h3>
         - Chưa đóng:
@@ -29,6 +34,19 @@
         </span>
       </h3>
       <div class="alert alert-danger">* NOTE: Chúng tôi sẽ tạm dừng cung cấp nước nếu số tiền nợ vượt quá 7,000,000 đ</div>
+    </div>
+  </div>
+  <!-- CONTRACT -->
+  <div class="panel panel-primary">
+    <div class="panel-heading">
+      <div class="panel-title">
+        Hợp đồng hiện tại
+      </div>
+    </div>
+    <div class="panel-body">
+      {% with current_water_contract as water_contract %}
+        {% include 'includes/water_contract.html' %}
+      {% endwith %}
     </div>
   </div>
   <hr />
@@ -64,6 +82,7 @@
     {% with current_water_price_config as price_config %} {% include 'includes/short_water_price_config.html' %} {% endwith %}
   </div>
   <hr />
+  <!-- HISTORY -->
   <div>
     <h3>Lịch sử </h3>
     <div>
@@ -116,7 +135,11 @@
           </div>
           {% endif %}
           <div>
-            <label>Giá: </label> {% with bill as water_bill %} {% include 'includes/total_price_table.html' %} {% endwith %}
+            <label>Giá: </label>
+            {{bill.price_config.contract_type}}
+            {% with bill as water_bill %}
+              {% include 'includes/total_price_table.html' %}
+            {% endwith %}
           </div>
         </div>
         <div class="panel-footer">

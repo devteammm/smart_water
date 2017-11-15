@@ -25,26 +25,28 @@ HOST: http://128.199.102.46
   * username: digital_customer1
   * password: 1
   * device_token: digital_device1
+  * contract type: binh_dan
 
 ### Customer 2
   * Use mechanics water device
   * username: mechanics_customer1
   * password: 1
   * device_token: mechanics_device1
+  * contract type: doanh_nghiep
 
 ### Customer 3
   * Use digital water device
   * username: digital_customer2
   * password: 1
   * device_token: digital_device2
-
+  * contract type: nha_may
 
 ### Customer 4
   * Use mechanics water device
   * username: mechanics_customer2
   * password: 1
   * device_token: mechanics_device2
-
+  * contract type: binh_dan
 
 ## Digital Device API
 
